@@ -23,9 +23,9 @@
     {
         "strategy": "convertible",
         "name": "可转债公告",
-        "freq": "1d",
+        "freq": "1h",
         "url": [
-            "http://www.sse.com.cn/disclosure/bond/announcement/convertible/",
+            "http://query.sse.com.cn/infodisplay/queryLatestBulletinNew.do?",
             "http://disclosure.szse.cn/m/search0425.jsp"
         ],
         "para": []
