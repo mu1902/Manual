@@ -1,0 +1,33 @@
+[
+    {
+        "strategy": "newstock",
+        "name": "新股开板",
+        "freq": "30s",
+        "url": [
+            "http://hq.sinajs.cn/list="
+        ],
+        "para": [
+            "603042",
+            "300658",
+            "002875",
+            "603200",
+            "603196",
+            "300659",
+            "300655",
+            "300657",
+            "002877",
+            "002878",
+            "300661"
+        ]
+    },
+    {
+        "strategy": "convertible",
+        "name": "可转债公告",
+        "freq": "1d",
+        "url": [
+            "http://www.sse.com.cn/disclosure/bond/announcement/convertible/",
+            "http://disclosure.szse.cn/m/search0425.jsp"
+        ],
+        "para": []
+    }
+]
