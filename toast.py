@@ -32,7 +32,7 @@ class ToastNotification(object):
                           0, 0, LR_LOADFROMFILE | LR_DEFAULTSIZE)
 
         nid1 = (self.hwnd, 0, NIF_ICON | NIF_MESSAGE |
-               NIF_TIP, WM_USER + 20, hicon, "Tooltip")
+                NIF_TIP, WM_USER + 20, hicon, "Tooltip")
         nid2 = (self.hwnd, 0, NIF_INFO, WM_USER + 20,
                 hicon, "Balloon Tooltip", msg, 200, title)
         Shell_NotifyIcon(NIM_ADD, nid2)
