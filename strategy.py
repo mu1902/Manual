@@ -1,5 +1,7 @@
 import datetime
 import json
+import threading
+import time
 
 from pyquery import PyQuery as pq
 
@@ -8,9 +10,12 @@ import tool
 from globalval import exited
 
 DUR = 5
+lock = threading.Lock()
 
 
 def newstock(strategy, flag=0):
+    print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())
+                        ) + 'Thread: ' + strategy['strategy'] + ' started')
     global exited
     tn = toast.ToastNotification(strategy['strategy'])
     while not exited:
@@ -34,16 +39,21 @@ def newstock(strategy, flag=0):
             if current == 0:
                 continue
             if ratio < 5 or current < round(end_y * 1.1, 2):
+                lock.acquire()
                 tn.show(strategy['name'], s[:6] + '-' + res[0].split('"')[1] + "\n买一/成交额倍数：" + str(
                     round(ratio, 2)) + "\n现价：" + str(round(current, 2)) + "-涨停价：" +
                     str(round(end_y * 1.1, 2)), DUR)
+                lock.release()
         tool.wait(strategy['freq'])
     if exited:
         tn.unregister()
-        print('Thread' + strategy['strategy'] + 'stoped')
+        print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())
+                            ) + 'Thread:' + strategy['strategy'] + ' stoped')
 
 
 def convertible(strategy, flag=0):
+    print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())
+                        ) + 'Thread: ' + strategy['strategy'] + ' started')
     global exited
     tn = toast.ToastNotification(strategy['strategy'])
     while not exited:
@@ -52,17 +62,27 @@ def convertible(strategy, flag=0):
                                                   "endDate": datetime.date.today().strftime('%Y-%m-%d')}, 'get', {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.15063",
                                                                                                                   "Host": "query.sse.com.cn",
                                                                                                                   "Referer": "http://www.sse.com.cn/disclosure/listedinfo/announcement/"}).decode('UTF-8')
-        items = json.loads(res1)["result"]
-        # title,url,security_Code
-        tn.show(strategy['name'], "上交所公告数：" + str(len(items)))
+        items1 = json.loads(res1)["result"]  # title,url,security_Code
+        res1 = tool.get_html(strategy['url'][0], {"keyWord": "可转换债券",
+                                                  "beginDate": datetime.date.today().strftime('%Y-%m-%d'),
+                                                  "endDate": datetime.date.today().strftime('%Y-%m-%d')}, 'get', {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.15063",
+                                                                                                                  "Host": "query.sse.com.cn",
+                                                                                                                  "Referer": "http://www.sse.com.cn/disclosure/listedinfo/announcement/"}).decode('UTF-8')
+        items2 = json.loads(res1)["result"]  # title,url,security_Code
+        lock.acquire()
+        tn.show(strategy['name'], "上交所公告数：" + str(len(items1) + len(items2)))
+        lock.release()
 
         res2 = tool.get_html(strategy['url'][1], {"noticeType": "0109",
                                                   "startTime": datetime.date.today().strftime('%Y-%m-%d'),
                                                   "endTime": datetime.date.today().strftime('%Y-%m-%d')}).decode('gb2312')
         items = pq(res2)('.td2 a').items()
         item_list = list(items)
+        lock.acquire()
         tn.show(strategy['name'], "深交所公告数：" + str(len(item_list)))
+        lock.release()
         tool.wait(strategy['freq'])
     if exited:
         tn.unregister()
-        print('Thread' + strategy['strategy'] + 'stoped')
+        print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())
+                            ) + 'Thread: ' + strategy['strategy'] + ' stoped')
