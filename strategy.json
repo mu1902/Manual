@@ -23,7 +23,7 @@
     {
         "strategy": "convertible",
         "name": "可转债公告",
-        "freq": "1h",
+        "freq": "1m",
         "url": [
             "http://query.sse.com.cn/infodisplay/queryLatestBulletinNew.do?",
             "http://disclosure.szse.cn/m/search0425.jsp"

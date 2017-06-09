@@ -8,9 +8,11 @@ from strategy import newstock
 from strategy import convertible
 from globalval import exited
 
+ths = []
+
 def sigint_handler(signum, frame):
-    global exited
-    exited = True
+    exited.flag = True
+    # print("Wait to Exit...")
     print("Exit...")
     sys.exit()
 
@@ -24,15 +26,12 @@ if __name__ == '__main__':
     finally:
         file_object.close()
 
-    ths = []
     for s in strategies:
-        th = Thread(target=eval(s['strategy']), args=(s, 0))
+        th = Thread(target=eval(s['strategy']), args=(s,))
         th.setDaemon(True)
         th.start()
         ths.append(th)
 
-    # for th in ths:
-    #     th.join()
     while True:
         alive = False
         for th in ths:
@@ -41,3 +40,5 @@ if __name__ == '__main__':
                 break
         if not alive:
             break
+
+    print("Exit...")

@@ -1,1 +1,2 @@
-exited = False
+class exited(object):
+    flag = False

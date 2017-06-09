@@ -3,6 +3,7 @@ import json
 import threading
 import time
 
+import wrapt
 from pyquery import PyQuery as pq
 
 import toast
@@ -13,12 +14,26 @@ DUR = 5
 lock = threading.Lock()
 
 
-def newstock(strategy, flag=0):
-    print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())
-                        ) + 'Thread: ' + strategy['strategy'] + ' started')
-    global exited
+@wrapt.decorator
+def log(wrapped, instance, args, kwargs):
+    print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()) +
+          ' Thread: ' + args[0]['strategy'] + ' started')
+    wrapped(*args, **kwargs)
+    print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()) +
+          ' Thread: ' + args[0]['strategy'] + ' stoped')
+
+
+@log
+def newstock(strategy):
+    d = datetime.datetime.now()
+    d1 = datetime.datetime.now().replace(hour=9, minute=25, second=0, microsecond=0)
+    d2 = datetime.datetime.now().replace(hour=15, minute=0, second=0, microsecond=0)
+    in_time = d > d1 and d < d2
+    if not in_time:
+        print("Now is not trading time")
+        return None
     tn = toast.ToastNotification(strategy['strategy'])
-    while not exited:
+    while not exited.flag and in_time:
         for s in strategy['para']:
             if s[0] == '0' or s[0] == '3':
                 url = strategy['url'][0] + 'sz' + s
@@ -40,23 +55,18 @@ def newstock(strategy, flag=0):
                 continue
             if ratio < 5 or current < round(end_y * 1.1, 2):
                 lock.acquire()
-                tn.show(strategy['name'], s[:6] + '-' + res[0].split('"')[1] + "\n买一/成交额倍数：" + str(
+                tn.show(strategy['name'], s[:6] + '-' + res[0].split('"')[1] + "\n买一总额倍数：" + str(
                     round(ratio, 2)) + "\n现价：" + str(round(current, 2)) + "-涨停价：" +
                     str(round(end_y * 1.1, 2)), DUR)
                 lock.release()
         tool.wait(strategy['freq'])
-    if exited:
-        tn.unregister()
-        print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())
-                            ) + 'Thread:' + strategy['strategy'] + ' stoped')
+    tn.unregister()
 
 
-def convertible(strategy, flag=0):
-    print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())
-                        ) + 'Thread: ' + strategy['strategy'] + ' started')
-    global exited
+@log
+def convertible(strategy):
     tn = toast.ToastNotification(strategy['strategy'])
-    while not exited:
+    while not exited.flag:
         res1 = tool.get_html(strategy['url'][0], {"keyWord": "可转债",
                                                   "beginDate": datetime.date.today().strftime('%Y-%m-%d'),
                                                   "endDate": datetime.date.today().strftime('%Y-%m-%d')}, 'get', {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.15063",
@@ -82,7 +92,4 @@ def convertible(strategy, flag=0):
         tn.show(strategy['name'], "深交所公告数：" + str(len(item_list)))
         lock.release()
         tool.wait(strategy['freq'])
-    if exited:
-        tn.unregister()
-        print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())
-                            ) + 'Thread: ' + strategy['strategy'] + ' stoped')
+    tn.unregister()
