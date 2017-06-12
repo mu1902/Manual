@@ -25,15 +25,17 @@ def log(wrapped, instance, args, kwargs):
 
 @log
 def newstock(strategy):
-    d = datetime.datetime.now()
-    d1 = datetime.datetime.now().replace(hour=9, minute=25, second=0, microsecond=0)
-    d2 = datetime.datetime.now().replace(hour=15, minute=0, second=0, microsecond=0)
-    in_time = d > d1 and d < d2
-    if not in_time:
-        print("Now is not trading time")
-        return None
     tn = toast.ToastNotification(strategy['strategy'])
-    while not exited.flag and in_time:
+    while not exited.flag:
+        d = datetime.datetime.now()
+        d1 = datetime.datetime.now().replace(hour=9, minute=25, second=0, microsecond=0)
+        d2 = datetime.datetime.now().replace(hour=15, minute=0, second=0, microsecond=0)
+        in_time = d > d1 and d < d2
+        if not in_time:
+            print("Now is not trading time")
+            tool.wait(strategy['freq'])
+            continue
+
         for s in strategy['para']:
             if s[0] == '0' or s[0] == '3':
                 url = strategy['url'][0] + 'sz' + s
@@ -67,29 +69,31 @@ def newstock(strategy):
 def convertible(strategy):
     tn = toast.ToastNotification(strategy['strategy'])
     while not exited.flag:
+        # 上交所
         res1 = tool.get_html(strategy['url'][0], {"keyWord": "可转债",
-                                                  "beginDate": datetime.date.today().strftime('%Y-%m-%d'),
+                                                  "beginDate": strategy['begin'],
                                                   "endDate": datetime.date.today().strftime('%Y-%m-%d')}, 'get', {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.15063",
                                                                                                                   "Host": "query.sse.com.cn",
                                                                                                                   "Referer": "http://www.sse.com.cn/disclosure/listedinfo/announcement/"}).decode('UTF-8')
         items1 = json.loads(res1)["result"]  # title,url,security_Code
         res1 = tool.get_html(strategy['url'][0], {"keyWord": "可转换债券",
-                                                  "beginDate": datetime.date.today().strftime('%Y-%m-%d'),
+                                                  "beginDate": strategy['begin'],
                                                   "endDate": datetime.date.today().strftime('%Y-%m-%d')}, 'get', {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.15063",
                                                                                                                   "Host": "query.sse.com.cn",
                                                                                                                   "Referer": "http://www.sse.com.cn/disclosure/listedinfo/announcement/"}).decode('UTF-8')
         items2 = json.loads(res1)["result"]  # title,url,security_Code
-        lock.acquire()
-        tn.show(strategy['name'], "上交所公告数：" + str(len(items1) + len(items2)))
-        lock.release()
-
+        # 深交所
         res2 = tool.get_html(strategy['url'][1], {"noticeType": "0109",
-                                                  "startTime": datetime.date.today().strftime('%Y-%m-%d'),
+                                                  "startTime": strategy['begin'],
                                                   "endTime": datetime.date.today().strftime('%Y-%m-%d')}).decode('gb2312')
         items = pq(res2)('.td2 a').items()
         item_list = list(items)
+        # <a href="PDF相对地址">公告名称</a>
+
         lock.acquire()
-        tn.show(strategy['name'], "深交所公告数：" + str(len(item_list)))
+        tn.show(strategy['name'], "上交所：" + str(len(items1) +
+                                               len(items2)) + "\n深交所：" + str(len(item_list)), DUR)
         lock.release()
+
         tool.wait(strategy['freq'])
     tn.unregister()

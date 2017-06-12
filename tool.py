@@ -1,5 +1,8 @@
 import urllib
+import smtplib
 from time import sleep
+from email.mime.text import MIMEText
+
 
 def get_html(url, request_data=None, method='post', header=None):
     ''' 获取页面 '''
@@ -25,6 +28,21 @@ def get_html(url, request_data=None, method='post', header=None):
     except urllib.error.URLError as e:
         print(e)
         return ''
+
+
+def send_email(to_list, subject, massage):
+    mail_host = "smtp.exmail.qq.com"
+    mail_user = "fund@fundbj.com"
+    mail_pwd = "fed68390036"
+    msg = MIMEText(massage, _subtype='plain', _charset='gb2312')
+    msg['Subject'] = subject
+    msg['From'] = mail_user
+    msg['To'] = ";".join(to_list)
+    server = smtplib.SMTP()
+    server.connect(mail_host)
+    server.login(mail_user, mail_pwd)
+    server.sendmail(mail_user, to_list, msg.as_string())
+    server.close()
 
 
 def wait(t):
