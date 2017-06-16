@@ -70,29 +70,20 @@ def convertible(strategy):
     tn = toast.ToastNotification(strategy['strategy'])
     while not exited.flag:
         # 上交所
-        res1 = tool.get_html(strategy['url'][0], {"keyWord": "可转债",
-                                                  "beginDate": strategy['begin'],
-                                                  "endDate": datetime.date.today().strftime('%Y-%m-%d')}, 'get', {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.15063",
-                                                                                                                  "Host": "query.sse.com.cn",
-                                                                                                                  "Referer": "http://www.sse.com.cn/disclosure/listedinfo/announcement/"}).decode('UTF-8')
+        res1 = tool.get_html(strategy['url'][0], {"beginDate": strategy['begin'], "endDate": datetime.date.today().strftime('%Y-%m-%d')}, 'get', {
+                             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.15063", "Host": "query.sse.com.cn", "Referer": "http://www.sse.com.cn/disclosure/listedinfo/announcement/"}).decode('UTF-8')
         items1 = json.loads(res1)["result"]  # title,url,security_Code
-        res1 = tool.get_html(strategy['url'][0], {"keyWord": "可转换债券",
-                                                  "beginDate": strategy['begin'],
-                                                  "endDate": datetime.date.today().strftime('%Y-%m-%d')}, 'get', {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.15063",
-                                                                                                                  "Host": "query.sse.com.cn",
-                                                                                                                  "Referer": "http://www.sse.com.cn/disclosure/listedinfo/announcement/"}).decode('UTF-8')
-        items2 = json.loads(res1)["result"]  # title,url,security_Code
+
         # 深交所
         res2 = tool.get_html(strategy['url'][1], {"noticeType": "0109",
                                                   "startTime": strategy['begin'],
                                                   "endTime": datetime.date.today().strftime('%Y-%m-%d')}).decode('gb2312')
-        items = pq(res2)('.td2 a').items()
-        item_list = list(items)
+        items2 = pq(res2)('.td2 a').items()
+        item_list = list(items2)
         # <a href="PDF相对地址">公告名称</a>
 
         lock.acquire()
-        tn.show(strategy['name'], "上交所：" + str(len(items1) +
-                                               len(items2)) + "\n深交所：" + str(len(item_list)), DUR)
+        tn.show(strategy['name'], "上交所：" + str(len(items1)) + "\n深交所：" + str(len(item_list)), DUR)
         lock.release()
 
         tool.wait(strategy['freq'])

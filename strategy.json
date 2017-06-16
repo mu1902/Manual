@@ -7,15 +7,16 @@
             "http://hq.sinajs.cn/list="
         ],
         "para": [
-            "603042",
-            "603200",
-            "300655",
-            "300657",
-            "002877",
-            "002878",
-            "300661",
             "300662",
-            "300663"
+            "300663",
+            "603496",
+            "300665",
+            "603536",
+            "603767",
+            "603879",
+            "300666",
+            "603980",
+            "603226"
         ]
     },
     {
@@ -23,10 +24,10 @@
         "name": "可转债公告",
         "freq": "1h",
         "url": [
-            "http://query.sse.com.cn/infodisplay/queryLatestBulletinNew.do?",
+            "http://query.sse.com.cn/infodisplay/queryBulletinKzzTipsNew.do?",
             "http://disclosure.szse.cn/m/search0425.jsp"
         ],
         "para": [],
-        "begin": "2017-06-10"
+        "begin": "2017-06-16"
     }
 ]
