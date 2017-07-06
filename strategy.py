@@ -57,13 +57,16 @@ def newstock(strategy):
                 continue
             if ratio < 5 or buy1_e < 5 * 10**7 or current < round(end_y * 1.1, 2):
                 lock.acquire()
-                tn.show(strategy['name'], s[:6] + '-' + res[0].split('"')[1] + "\n买一总额倍数：" + str(
-                    round(ratio, 2)) + "\n现价：" + str(round(current, 2)) + "-涨停价：" +
-                    str(round(end_y * 1.1, 2)), DUR)
+                text1 = s[:6] + '-' + res[0].split('"')[1] + "\n"
+                text2 = "买一总额倍数：" + str(round(ratio, 2)) + "\n"
+                text3 = "买一额：" + str(round(buy1_e / 10000, 0)) + "万\n"
+                text4 = "现价：" + str(round(current, 2)) + \
+                    "-涨停价：" + str(round(end_y * 1.1, 2))
+                tn.show(strategy['name'], text1 + text2 + text3 + text4, DUR)
                 lock.release()
-        delta = (d-d1).seconds/60
-        if delta<10:
-            tool.wait(strategy['freq'])
+        delta = (d - d1).seconds / 60
+        if delta < 10:
+            tool.wait(strategy['freq1'])
         else:
             tool.wait(strategy['freq'])
     tn.unregister()
