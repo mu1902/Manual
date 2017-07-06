@@ -51,16 +51,21 @@ def newstock(strategy):
             buy1_p = float(res[11])
 
             ratio = buy1_v * buy1_p / turnover if turnover != 0 else 9999
+            buy1_e = buy1_v * buy1_p
 
             if current == 0:
                 continue
-            if ratio < 5 or current < round(end_y * 1.1, 2):
+            if ratio < 5 or buy1_e < 5 * 10**7 or current < round(end_y * 1.1, 2):
                 lock.acquire()
                 tn.show(strategy['name'], s[:6] + '-' + res[0].split('"')[1] + "\n买一总额倍数：" + str(
                     round(ratio, 2)) + "\n现价：" + str(round(current, 2)) + "-涨停价：" +
                     str(round(end_y * 1.1, 2)), DUR)
                 lock.release()
-        tool.wait(strategy['freq'])
+        delta = (d-d1).seconds/60
+        if delta<10:
+            tool.wait(strategy['freq'])
+        else:
+            tool.wait(strategy['freq'])
     tn.unregister()
 
 
@@ -82,7 +87,8 @@ def convertible(strategy):
         # <a href="PDF相对地址">公告名称</a>
 
         lock.acquire()
-        tn.show(strategy['name'], "上交所：" + str(len(items1)) + "\n深交所：" + str(len(item_list)), DUR)
+        tn.show(strategy['name'], "上交所：" + str(len(items1)) +
+                "\n深交所：" + str(len(item_list)), DUR)
         lock.release()
 
         tool.wait(strategy['freq'])
