@@ -1,6 +1,6 @@
 import urllib
 import smtplib
-from time import sleep
+import time
 from email.mime.text import MIMEText
 
 
@@ -48,10 +48,17 @@ def send_email(to_list, subject, massage):
 def wait(t):
     n = int(t[:-1])
     if t[-1] == 's':
-        sleep(n)
+        time.sleep(n)
     elif t[-1] == 'm':
-        sleep(n * 60)
+        time.sleep(n * 60)
     elif t[-1] == 'h':
-        sleep(n * 60 * 60)
+        time.sleep(n * 60 * 60)
     else:
-        sleep(0)
+        time.sleep(0)
+
+
+def output(title, message):
+    print("-----" + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()) + "-----")
+    print(">>>>>" + title + "<<<<<")
+    print(message)
+    print("------------------------------\n")

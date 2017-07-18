@@ -3,12 +3,18 @@ import json
 import signal
 import sys
 from threading import Thread
+from time import sleep
 
-from strategy import newstock
-from strategy import convertible
+from win32con import (HWND_TOPMOST, SWP_NOACTIVATE, SWP_NOMOVE,
+                      SWP_NOOWNERZORDER, SWP_SHOWWINDOW)
+
 from globalval import exited
+from strategy import convertible, newstock
+from win32api import GetConsoleTitle, SetConsoleTitle
+from win32gui import FindWindow, SetForegroundWindow, SetWindowPos
 
 ths = []
+
 
 def sigint_handler(signum, frame):
     exited.flag = True
@@ -19,6 +25,13 @@ def sigint_handler(signum, frame):
 
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, sigint_handler)
+
+    SetConsoleTitle("Monitor")
+    sleep(1)
+    hwnd = FindWindow(None, "Monitor")
+    SetForegroundWindow(hwnd)
+    SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 500, 300, SWP_NOMOVE |
+                 SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_SHOWWINDOW)
 
     try:
         file_object = open('strategy.json', mode='r', encoding='UTF-8')

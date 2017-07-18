@@ -20,7 +20,7 @@ class ToastNotification(object):
         self.classAtom = RegisterClass(self.wc)
 
     def show(self, title="Notification", msg="Some Message", duration=5, icon_path=None):
-        self.hwnd = CreateWindow(self.classAtom, "Notification", WS_OVERLAPPED | WS_SYSMENU,
+        self.hwnd = CreateWindow(self.classAtom, self.wc.lpszClassName, WS_OVERLAPPED | WS_SYSMENU,
                                  0, 0, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, self.hinst, None)
         UpdateWindow(self.hwnd)
 

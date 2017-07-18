@@ -6,13 +6,10 @@ import time
 import wrapt
 from pyquery import PyQuery as pq
 
-import toast
 import tool
 from globalval import exited
 
-DUR = 5
-lock = threading.Lock()
-
+# lock = threading.Lock()
 
 @wrapt.decorator
 def log(wrapped, instance, args, kwargs):
@@ -25,7 +22,6 @@ def log(wrapped, instance, args, kwargs):
 
 @log
 def newstock(strategy):
-    tn = toast.ToastNotification(strategy['strategy'])
     while not exited.flag:
         d = datetime.datetime.now()
         d1 = datetime.datetime.now().replace(hour=9, minute=25, second=0, microsecond=0)
@@ -56,25 +52,23 @@ def newstock(strategy):
             if current == 0:
                 continue
             if ratio < 5 or buy1_e < 5 * 10**7 or current < round(end_y * 1.1, 2):
-                lock.acquire()
+                # lock.acquire()
                 text1 = s[:6] + '-' + res[0].split('"')[1] + "\n"
                 text2 = "买一总额倍数：" + str(round(ratio, 2)) + "\n"
                 text3 = "买一额：" + str(round(buy1_e / 10000, 0)) + "万\n"
                 text4 = "现价：" + str(round(current, 2)) + \
                     "-涨停价：" + str(round(end_y * 1.1, 2))
-                tn.show(strategy['name'], text1 + text2 + text3 + text4, DUR)
-                lock.release()
+                tool.output(strategy['name'], text1 + text2 + text3 + text4)
+                # lock.release()
         delta = (d - d1).seconds / 60
         if delta < 10:
             tool.wait(strategy['freq1'])
         else:
             tool.wait(strategy['freq'])
-    tn.unregister()
 
 
 @log
 def convertible(strategy):
-    tn = toast.ToastNotification(strategy['strategy'])
     while not exited.flag:
         # 上交所
         res1 = tool.get_html(strategy['url'][0], {"beginDate": strategy['begin'], "endDate": datetime.date.today().strftime('%Y-%m-%d')}, 'get', {
@@ -89,10 +83,9 @@ def convertible(strategy):
         item_list = list(items2)
         # <a href="PDF相对地址">公告名称</a>
 
-        lock.acquire()
-        tn.show(strategy['name'], "上交所：" + str(len(items1)) +
-                "\n深交所：" + str(len(item_list)), DUR)
-        lock.release()
+        # lock.acquire()
+        tool.output(strategy['name'], "上交所：" + str(len(items1)) +
+                "\n深交所：" + str(len(item_list)))
+        # lock.release()
 
         tool.wait(strategy['freq'])
-    tn.unregister()
