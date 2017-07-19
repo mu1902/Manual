@@ -7,7 +7,7 @@ import wrapt
 from pyquery import PyQuery as pq
 
 import tool
-from globalval import exited
+from global_obj import Global
 
 # lock = threading.Lock()
 
@@ -22,7 +22,7 @@ def log(wrapped, instance, args, kwargs):
 
 @log
 def newstock(strategy):
-    while not exited.flag:
+    while not Global.exited_flag:
         d = datetime.datetime.now()
         d1 = datetime.datetime.now().replace(hour=9, minute=25, second=0, microsecond=0)
         d2 = datetime.datetime.now().replace(hour=15, minute=0, second=0, microsecond=0)
@@ -69,7 +69,7 @@ def newstock(strategy):
 
 @log
 def convertible(strategy):
-    while not exited.flag:
+    while not Global.exited_flag:
         # 上交所
         res1 = tool.get_html(strategy['url'][0], {"beginDate": strategy['begin'], "endDate": datetime.date.today().strftime('%Y-%m-%d')}, 'get', {
                              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.15063", "Host": "query.sse.com.cn", "Referer": "http://www.sse.com.cn/disclosure/listedinfo/announcement/"}).decode('UTF-8')

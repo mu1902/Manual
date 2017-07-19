@@ -61,4 +61,4 @@ def output(title, message):
     print("-----" + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()) + "-----")
     print(">>>>>" + title + "<<<<<")
     print(message)
-    print("------------------------------\n")
+    print("-----------------------------\n")

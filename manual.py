@@ -8,7 +8,7 @@ from time import sleep
 from win32con import (HWND_TOPMOST, SWP_NOACTIVATE, SWP_NOMOVE,
                       SWP_NOOWNERZORDER, SWP_SHOWWINDOW)
 
-from globalval import exited
+from global_obj import Global
 from strategy import convertible, newstock
 from win32api import GetConsoleTitle, SetConsoleTitle
 from win32gui import FindWindow, SetForegroundWindow, SetWindowPos
@@ -17,8 +17,7 @@ ths = []
 
 
 def sigint_handler(signum, frame):
-    exited.flag = True
-    # print("Wait to Exit...")
+    Global.exited_flag = True
     print("Exit...")
     sys.exit()
 
@@ -30,7 +29,7 @@ if __name__ == '__main__':
     sleep(1)
     hwnd = FindWindow(None, "Monitor")
     SetForegroundWindow(hwnd)
-    SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 500, 300, SWP_NOMOVE |
+    SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 500, 500, SWP_NOMOVE |
                  SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_SHOWWINDOW)
 
     try:
@@ -53,5 +52,4 @@ if __name__ == '__main__':
                 break
         if not alive:
             break
-
-    print("Exit...")
+        sleep(1)
