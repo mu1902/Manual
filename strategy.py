@@ -11,6 +11,7 @@ from global_obj import Global
 
 # lock = threading.Lock()
 
+
 @wrapt.decorator
 def log(wrapped, instance, args, kwargs):
     print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()) +
@@ -46,10 +47,10 @@ def newstock(strategy):
             buy1_v = float(res[10])
             buy1_p = float(res[11])
 
-            ratio = buy1_v * buy1_p / turnover if turnover != 0 else 9999
+            ratio = buy1_v * buy1_p / turnover if turnover != 0 else 99999
             buy1_e = buy1_v * buy1_p
 
-            if current == 0:
+            if current == 0 or buy1_v == 0:
                 continue
             if ratio < 5 or buy1_e < 5 * 10**7 or current < round(end_y * 1.1, 2):
                 # lock.acquire()
@@ -85,7 +86,7 @@ def convertible(strategy):
 
         # lock.acquire()
         tool.output(strategy['name'], "上交所：" + str(len(items1)) +
-                "\n深交所：" + str(len(item_list)))
+                    "\n深交所：" + str(len(item_list)))
         # lock.release()
 
         tool.wait(strategy['freq'])
