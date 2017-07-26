@@ -2,12 +2,15 @@ import datetime
 import json
 import threading
 import time
+import numpy
 
 import wrapt
 from pyquery import PyQuery as pq
 
 import tool
 from global_obj import Global
+from WindPy import w
+
 
 # lock = threading.Lock()
 
@@ -72,21 +75,45 @@ def newstock(strategy):
 def convertible(strategy):
     while not Global.exited_flag:
         # 上交所
-        res1 = tool.get_html(strategy['url'][0], {"beginDate": strategy['begin'], "endDate": datetime.date.today().strftime('%Y-%m-%d')}, 'get', {
+        res1 = tool.get_html(strategy['url'][0], {"title": "发行公告", "beginDate": strategy['begin'], "endDate": datetime.date.today().strftime('%Y-%m-%d')}, 'get', {
                              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.15063", "Host": "query.sse.com.cn", "Referer": "http://www.sse.com.cn/disclosure/listedinfo/announcement/"}).decode('UTF-8')
-        items1 = json.loads(res1)["result"]  # title,url,security_Code
+        items1 = json.loads(res1)["result"]  # title,URL,security_Code
+        h_out = '\n'
+        for i in items1:
+            h_out += i["title"] + '\nhttp://www.sse.com.cn' + i["URL"] + '\n'
 
         # 深交所
         res2 = tool.get_html(strategy['url'][1], {"noticeType": "0109",
+                                                  "keyword": "发行公告".encode('GB2312'),
                                                   "startTime": strategy['begin'],
-                                                  "endTime": datetime.date.today().strftime('%Y-%m-%d')}).decode('gb2312')
-        items2 = pq(res2)('.td2 a').items()
-        item_list = list(items2)
-        # <a href="PDF相对地址">公告名称</a>
+                                                  "endTime": datetime.date.today().strftime('%Y-%m-%d')}).decode('GB2312')
+        items2 = pq(res2)('.td2 a').items()  # <a href="PDF相对地址">公告名称</a>
+        s_out = '\n'
+        for i in items2:
+            s_out += i.text() + '\nhttp://disclosure.szse.cn/m/' + i.attr("href") + '\n'
 
-        # lock.acquire()
-        tool.output(strategy['name'], "上交所：" + str(len(items1)) +
-                    "\n深交所：" + str(len(item_list)))
-        # lock.release()
+        if len(items1) > 0 or len(list(items2)) > 0:
+            tool.send_email(["zhongc@fundbj.com", "chuh@fundbj.com"],
+                            strategy['name'], h_out + s_out)
+        tool.output(strategy['name'], "上交所：" + h_out + "\n深交所：" + s_out)
+        tool.wait(strategy['freq'])
 
+
+@log
+def goods(strategy):
+    while not Global.exited_flag:
+        d = datetime.date.today().strftime('%Y-%m-%d')
+        d1 = (datetime.date.today() -
+              datetime.timedelta(days=30)).strftime('%Y-%m-%d')
+        w.start()
+        for g in strategy["para"]:
+            price = w.edb(g["code"], d1, d, "Fill=Previous")
+            if price.ErrorCode == 0:
+                avg = numpy.array(price.Data[0]).mean().round(2).item()
+                last = price.Data[0][-1]
+                tool.output(strategy['name'], "近30天均价：" +
+                            str(avg) + "\n当前价" + str(last))
+                tool.send_email(
+                    ["xuex@fundbj.com", "chuh@fundbj.com"], strategy['name'], "商品：" + g['name'] + "\n近30天均价：" + str(avg) + "\n当前价" + str(last))
+        w.stop()
         tool.wait(strategy['freq'])

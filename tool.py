@@ -62,3 +62,21 @@ def output(title, message):
     print(">>>>>" + title + "<<<<<")
     print(message)
     print("-----------------------------\n")
+
+
+def read_log(path):
+    try:
+        file = open(path, 'r')
+        content = file.readlines()
+    finally:
+        file.close()
+    return content
+
+
+def write_log(path, list):
+    try:
+        file = open(path, 'a')
+        for i in list:
+            file.write(i)
+    finally:
+        file.close()
