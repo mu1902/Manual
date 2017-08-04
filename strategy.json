@@ -9,28 +9,46 @@
         ],
         "para": [
             "300676",
-            "002882",
             "603612",
-            "603707",
             "300675",
             "601619",
-            "300677",
             "002888",
-            "603676",
-            "300681",
-            "300680"
+            "300680",
+            "300678",
+            "002889",
+            "603357",
+            "002887",
+            "300682",
+            "603825",
+            "603860",
+            "002890",
+            "300685",
+            "300687"
         ],
-        "para1": []
+        "para1": [
+            "300686"
+        ]
     },
     {
         "strategy": "convertible",
         "name": "可转债公告",
-        "freq": "1h",
+        "freq": "4h",
         "url": [
             "http://query.sse.com.cn/infodisplay/queryBulletinKzzTipsNew.do?",
             "http://disclosure.szse.cn/m/search0425.jsp"
         ],
         "para": [],
         "begin": "2017-07-26"
+    },
+    {
+        "strategy": "windIndex",
+        "name": "Wind指数",
+        "period": [1, 10],
+        "para": [
+            {
+                "name": "博彩指数",
+                "code": "G0005097"
+            }
+        ]
     }
 ]

@@ -2,7 +2,8 @@ import datetime
 import json
 import threading
 import time
-import numpy
+import numpy as np
+import pandas as pd
 
 import wrapt
 from pyquery import PyQuery as pq
@@ -13,6 +14,8 @@ from WindPy import w
 
 
 # lock = threading.Lock()
+mail_list = ["wujg@fundbj.com", "zhongc@fundbj.com",
+             "xuex@fundbj.com", "zhengy@fundbj.com", "chuh@fundbj.com"]
 
 
 @wrapt.decorator
@@ -28,7 +31,7 @@ def log(wrapped, instance, args, kwargs):
 def newstock(strategy):
     while not Global.exited_flag:
         d = datetime.datetime.now()
-        d1 = datetime.datetime.now().replace(hour=9, minute=25, second=0, microsecond=0)
+        d1 = datetime.datetime.now().replace(hour=9, minute=20, second=0, microsecond=0)
         d2 = datetime.datetime.now().replace(hour=15, minute=0, second=0, microsecond=0)
         in_time = d > d1 and d < d2
         if not in_time:
@@ -55,7 +58,7 @@ def newstock(strategy):
 
             if current == 0 or buy1_v == 0:
                 continue
-            if ratio < 5 or buy1_e < 5 * 10**7 or current < round(end_y * 1.1, 2):
+            if ratio < 5 or (buy1_e < 5 * 10**7 and ratio < 10) or current < round(end_y * 1.1, 2):
                 # lock.acquire()
                 text1 = s[:6] + '-' + res[0].split('"')[1] + "\n"
                 text2 = "买一总额倍数：" + str(round(ratio, 2)) + "\n"
@@ -100,20 +103,23 @@ def convertible(strategy):
 
 
 @log
-def goods(strategy):
-    while not Global.exited_flag:
-        d = datetime.date.today().strftime('%Y-%m-%d')
-        d1 = (datetime.date.today() -
-              datetime.timedelta(days=30)).strftime('%Y-%m-%d')
+def windIndex(strategy):
+    d = datetime.date.today()
+    d_begin = datetime.date.today() - datetime.timedelta(days=500)
+    if d.day in strategy['period']:
         w.start()
-        for g in strategy["para"]:
-            price = w.edb(g["code"], d1, d, "Fill=Previous")
-            if price.ErrorCode == 0:
-                avg = numpy.array(price.Data[0]).mean().round(2).item()
-                last = price.Data[0][-1]
-                tool.output(strategy['name'], "近30天均价：" +
-                            str(avg) + "\n当前价" + str(last))
-                tool.send_email(
-                    ["xuex@fundbj.com", "chuh@fundbj.com"], strategy['name'], "商品：" + g['name'] + "\n近30天均价：" + str(avg) + "\n当前价" + str(last))
+        for g in strategy['para']:
+            index = w.edb(g['code'], d_begin.strftime('%Y-%m-%d'),
+                          d.strftime('%Y-%m-%d'), "Fill=Previous")
+            if index.ErrorCode == 0:
+                # df = pd.DataFrame({'date':index.Times,'data':index.Data[0]})
+                # df.set_index('date', inplace=True)
+                df = pd.DataFrame({'data': index.Data[0]}, index=index.Times)
+                dfp = df.to_period()
+                com = ((dfp['data'][-1] / dfp['data'][-2] - 1) * 100).round(2)
+                seq = ((dfp['data'][-1] / dfp['data'][-12] - 1) * 100).round(2)
+                message = g['name'] + " " + str(dfp.index[-1]) + \
+                    "\n同比：" + str(com) + "%\n环比：" + str(seq) + "%"
+                tool.output(strategy['name'], message)
+                tool.send_email(mail_list, strategy['name'], message)
         w.stop()
-        tool.wait(strategy['freq'])
