@@ -31,7 +31,7 @@ def log(wrapped, instance, args, kwargs):
 def newstock(strategy):
     while not Global.exited_flag:
         d = datetime.datetime.now()
-        d1 = datetime.datetime.now().replace(hour=9, minute=20, second=0, microsecond=0)
+        d1 = datetime.datetime.now().replace(hour=9, minute=25, second=0, microsecond=0)
         d2 = datetime.datetime.now().replace(hour=15, minute=0, second=0, microsecond=0)
         in_time = d > d1 and d < d2
         if not in_time:
@@ -98,7 +98,7 @@ def convertible(strategy):
         if len(items1) > 0 or len(list(items2)) > 0:
             tool.send_email(["zhongc@fundbj.com", "chuh@fundbj.com"],
                             strategy['name'], h_out + s_out)
-        tool.output(strategy['name'], "上交所：" + h_out + "\n深交所：" + s_out)
+            tool.output(strategy['name'], "上交所：" + h_out + "\n深交所：" + s_out)
         tool.wait(strategy['freq'])
 
 
