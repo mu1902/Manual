@@ -8,41 +8,41 @@
             "http://hq.sinajs.cn/list="
         ],
         "para": [
-            "300676",
-            "603612",
-            "300675",
-            "601619",
-            "002888",
-            "300680",
-            "300678",
-            "002889",
-            "603357",
-            "300682",
-            "603825",
-            "603860",
-            "002890",
             "300685",
-            "300687"
+            "300689",
+            "603602",
+            "300688",
+            "300691",
+            "603721",
+            "601326"
         ],
         "para1": [
-            "300686"
+            "002892",
+            "603776"
         ]
     },
     {
         "strategy": "convertible",
         "name": "可转债公告",
-        "freq": "4h",
+        "freq": "5h",
         "url": [
             "http://query.sse.com.cn/infodisplay/queryBulletinKzzTipsNew.do?",
+            "http://query.sse.com.cn/commonSoaQuery.do?",
             "http://disclosure.szse.cn/m/search0425.jsp"
         ],
         "para": [],
-        "begin": "2017-07-26"
+        "receiver": [
+            "zhongc@fundbj.com",
+            "chuh@fundbj.com"
+        ],
+        "begin": "2017-08-01"
     },
     {
         "strategy": "windIndex",
         "name": "Wind指数",
-        "period": [1, 10],
+        "period": [
+            1
+        ],
         "para": [
             {
                 "name": "博彩指数",
