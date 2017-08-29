@@ -122,8 +122,8 @@ def convertible(strategy):
             sz_out += i.text() + '\nhttp://disclosure.szse.cn/m/' + i.attr("href") + '\n'
 
         if (len(sh_items1) + len(sh_items2) + len(list(sz_items1))) > 0:
-            # tool.send_email(strategy['receiver'],
-            #                 strategy['name'], sh_out + sz_out)
+            tool.send_email(strategy['receiver'],
+                            strategy['name'], sh_out + sz_out)
             tool.output(strategy['name'], "上交所：" + sh_out + "\n深交所：" + sz_out)
         tool.wait(strategy['freq'])
 
