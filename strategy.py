@@ -88,7 +88,7 @@ def convertible(strategy):
                                 ).decode('UTF-8')
         sh_items1 = json.loads(sh_res1)["result"]  # security_Code证券代码
         sh_items1 = list(
-            filter(lambda x: ('发行公告' in x["title"])or('中签' in x["title"]), sh_items1))
+            filter(lambda x: ('发行公告' in x["title"])or('中签' in x["title"])or('上市' in x["title"]), sh_items1))
         sh_out = '\n'
         for i in sh_items1:
             sh_out += i["title"] + '\nhttp://www.sse.com.cn' + i["URL"] + '\n'
@@ -104,7 +104,7 @@ def convertible(strategy):
                                 ).decode('UTF-8')
         sh_items2 = json.loads(sh_res2)["result"]
         sh_items2 = list(filter(lambda x: ('发行公告' in x["docTitle"])or(
-            '中签' in x["docTitle"]), sh_items2))
+            '中签' in x["docTitle"])or('上市' in x["docTitle"]), sh_items2))
         for i in sh_items2:
             sh_out += i["docTitle"] + '\nhttp://' + i["docURL"] + '\n'
 
@@ -116,7 +116,7 @@ def convertible(strategy):
                                  "endTime": datetime.date.today().strftime('%Y-%m-%d')}).decode('GB2312')
         sz_items1 = pq(sz_res1)('.td2 a').items()  # <a href="PDF相对地址">公告名称</a>
         sz_items1 = list(
-            filter(lambda x: ('发行公告' in i.text())or('中签' in i.text()), sz_items1))
+            filter(lambda x: ('发行公告' in i.text())or('中签' in i.text())or('上市' in i.text()), sz_items1))
         sz_out = '\n'
         for i in sz_items1:
             sz_out += i.text() + '\nhttp://disclosure.szse.cn/m/' + i.attr("href") + '\n'
