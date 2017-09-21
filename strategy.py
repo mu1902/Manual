@@ -116,7 +116,7 @@ def convertible(strategy):
                                  "endTime": datetime.date.today().strftime('%Y-%m-%d')}).decode('GB2312')
         sz_items1 = pq(sz_res1)('.td2 a').items()  # <a href="PDF相对地址">公告名称</a>
         sz_items1 = list(
-            filter(lambda x: ('发行公告' in i.text())or('中签' in i.text())or('上市' in i.text()), sz_items1))
+            filter(lambda x: ('发行公告' in x.text())or('中签' in x.text())or('上市' in x.text()), sz_items1))
         sz_out = '\n'
         for i in sz_items1:
             sz_out += i.text() + '\nhttp://disclosure.szse.cn/m/' + i.attr("href") + '\n'
