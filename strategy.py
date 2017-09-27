@@ -111,7 +111,7 @@ def convertible(strategy):
         # 深交所
         sz_res1 = tool.get_html(strategy['url'][2],
                                 {"noticeType": "0109",
-                                 "keyword": "发行公告".encode('GB2312'),
+                                #  "keyword": "发行公告".encode('GB2312'),
                                  "startTime": strategy['begin'],
                                  "endTime": datetime.date.today().strftime('%Y-%m-%d')}).decode('GB2312')
         sz_items1 = pq(sz_res1)('.td2 a').items()  # <a href="PDF相对地址">公告名称</a>
