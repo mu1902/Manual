@@ -111,7 +111,7 @@ def convertible(strategy):
         # 深交所
         sz_res1 = tool.get_html(strategy['url'][2],
                                 {"noticeType": "0109",
-                                #  "keyword": "发行公告".encode('GB2312'),
+                                 #  "keyword": "发行公告".encode('GB2312'),
                                  "startTime": strategy['begin'],
                                  "endTime": datetime.date.today().strftime('%Y-%m-%d')}).decode('GB2312')
         sz_items1 = pq(sz_res1)('.td2 a').items()  # <a href="PDF相对地址">公告名称</a>
@@ -149,3 +149,89 @@ def windIndex(strategy):
                 tool.output(strategy['name'], message)
                 tool.send_email(mail_list, strategy['name'], message)
         w.stop()
+
+
+@log
+def HKEX(strategy):
+    def parse(arr, dic):
+        for row in dic['content'][1]['table']['tr']:
+            r = row['td'][0]
+            arr.append({
+                "d": 1,
+                "code": r[1],
+                "name": r[2].replace('\u3000', ''),
+                "net": int(r[3].replace(',', '')) -
+                int(r[4].replace(',', ''))
+            })
+
+    def sign(arr):
+        _arr = [n for n in arr[1:] if int(n) > 0]
+        if len(_arr) == len(arr) or len(_arr) == 0:
+            return True
+        else:
+            return False
+
+    def identify(rows, n):
+        reverse = {}
+        for row in rows:
+            if row['code'] in reverse:
+                reverse[row['code']].append(row['net'])
+            else:
+                reverse[row['code']] = [row['name'], row['net']]
+
+        reverse = {k: v for k, v in reverse.items() if len(v) ==
+                   n + 1 and sign(v)}
+        return reverse
+
+    def date_title(dates):
+        res = " " * 17
+        for d in dates:
+            res += d + "  "
+        res += "\n"
+        return res
+
+    def formatter(category, dic):
+        res = category + "\n"
+        for (k, v) in dic.items():
+            res += "0" * (6 - len(k)) + k + " "
+            for (i, x) in enumerate(v):
+                if i == 0:
+                    if len(x) > 4:
+                        res += x[:4] + " "
+                    else:
+                        res += "  " * (4 - len(x)) + x + " "
+                else:
+                    res += " " * (11 - len(str(x))) + str(x) + " "
+            res += "\n"
+        res += "\n"
+        return res
+
+    d = datetime.date.today()
+    sh, hksh, sz, hksz, dates = ([], [], [], [], [])
+    ndate = strategy['nDate']
+    while ndate > 0:
+        if d.weekday() != 5 or d.weekday() != 6:
+            t = datetime.datetime.now().timestamp()
+            t_str = str(t * 1000)[0:13]
+            param = 'data_tab_daily_' + d.strftime('%Y%m%d') + 'c.js?' + t_str
+            html = tool.get_html(
+                strategy['url'] + param, method='get')
+            if html != "":
+                data = json.loads(html.decode('utf-8').split(' = ')[1])
+                dates.append(d.strftime('%Y-%m-%d'))
+                # 沪股通
+                parse(sh, data[0])
+                # 港股通（沪）
+                parse(hksh, data[1])
+                # 深股通
+                parse(sz, data[2])
+                # 港股通（深）
+                parse(hksz, data[3])
+                ndate = ndate - 1
+        d = d - datetime.timedelta(days=1)
+
+    message = "" + date_title(dates) + formatter("沪股通", identify(sh, strategy['nDate'])) + formatter("港股通（沪）", identify(
+        hksh, strategy['nDate'])) + formatter("深股通", identify(sz, strategy['nDate'])) + formatter("港股通（深）", identify(hksz, strategy['nDate']))
+
+    tool.output(strategy['name'], message)
+    tool.send_email(strategy['receiver'], strategy['name'], message)

@@ -23,10 +23,10 @@ def get_html(url, request_data=None, method='post', header=None):
         con = urllib.request.urlopen(req).read()
         return con
     except urllib.error.HTTPError as e:
-        print(e)
+        # print(e)
         return ''
     except urllib.error.URLError as e:
-        print(e)
+        # print(e)
         return ''
 
 
