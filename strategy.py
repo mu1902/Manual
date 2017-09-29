@@ -156,13 +156,13 @@ def HKEX(strategy):
     def parse(arr, dic):
         for row in dic['content'][1]['table']['tr']:
             r = row['td'][0]
-            arr.append({
-                "d": 1,
-                "code": r[1],
-                "name": r[2].replace('\u3000', ''),
-                "net": int(r[3].replace(',', '')) -
-                int(r[4].replace(',', ''))
-            })
+            if r[1] != '-':
+                arr.append({
+                    "code": r[1],
+                    "name": r[2].replace('\u3000', ''),
+                    "net": int(r[3].replace(',', '')) -
+                    int(r[4].replace(',', ''))
+                })
 
     def sign(arr):
         _arr = [n for n in arr[1:] if int(n) > 0]
@@ -183,42 +183,37 @@ def HKEX(strategy):
                    n + 1 and sign(v)}
         return reverse
 
-    def date_title(dates):
-        res = " " * 17
-        for d in dates:
-            res += d + "  "
+    def date_title(dates, n):
+        res = " " * n
+        res += "  ".join(dates)
         res += "\n"
         return res
 
     def formatter(category, dic):
         res = category + "\n"
         for (k, v) in dic.items():
-            res += "0" * (6 - len(k)) + k + " "
+            res += "%6s " % (k)
             for (i, x) in enumerate(v):
                 if i == 0:
-                    if len(x) > 4:
-                        res += x[:4] + " "
-                    else:
-                        res += "  " * (4 - len(x)) + x + " "
+                    res += "%4.4s " % (x)
                 else:
-                    res += " " * (11 - len(str(x))) + str(x) + " "
+                    res += "%11s " % (x)
             res += "\n"
         res += "\n"
         return res
 
     d = datetime.date.today()
-    sh, hksh, sz, hksz, dates = ([], [], [], [], [])
-    ndate = strategy['nDate']
+    sh, hksh, sz, hksz, dates1 = ([], [], [], [], [])
+    ndate = strategy['nDate'][0]
     while ndate > 0:
         if d.weekday() != 5 or d.weekday() != 6:
             t = datetime.datetime.now().timestamp()
             t_str = str(t * 1000)[0:13]
             param = 'data_tab_daily_' + d.strftime('%Y%m%d') + 'c.js?' + t_str
             html = tool.get_html(
-                strategy['url'] + param, method='get')
+                strategy['url'][0] + param, method='get')
             if html != "":
                 data = json.loads(html.decode('utf-8').split(' = ')[1])
-                dates.append(d.strftime('%Y-%m-%d'))
                 # 沪股通
                 parse(sh, data[0])
                 # 港股通（沪）
@@ -227,11 +222,42 @@ def HKEX(strategy):
                 parse(sz, data[2])
                 # 港股通（深）
                 parse(hksz, data[3])
+                dates1.append(d.strftime('%Y-%m-%d'))
                 ndate = ndate - 1
         d = d - datetime.timedelta(days=1)
 
-    message = "" + date_title(dates) + formatter("沪股通", identify(sh, strategy['nDate'])) + formatter("港股通（沪）", identify(
-        hksh, strategy['nDate'])) + formatter("深股通", identify(sz, strategy['nDate'])) + formatter("港股通（深）", identify(hksz, strategy['nDate']))
+    message = "" + date_title(dates1, 17) + formatter("沪股通", identify(sh, strategy['nDate'][0])) + formatter("港股通（沪）", identify(
+        hksh, strategy['nDate'][0])) + formatter("深股通", identify(sz, strategy['nDate'][0])) + formatter("港股通（深）", identify(hksz, strategy['nDate'][0]))
+
+    message += "-----------------------------\n"
+
+    d = datetime.date.today()
+    hold = {k: [] for k in strategy['stock']}
+    dates2 = []
+    ndate = strategy['nDate'][1]
+
+    while ndate > 0:
+        if d.weekday() != 5 or d.weekday() != 6:
+            html = tool.get_html(strategy['url'][1], {
+                "ddlShareholdingDay": str(d.day),
+                "ddlShareholdingMonth":  "0" * (2 - len(str(d.month))) + str(d.month),
+                "ddlShareholdingYear": str(d.year)}, method='post').decode('utf-8')
+
+            data = pq(html)(".result-table tr")
+            for tr in data:
+                td_pq = pq(tr)("td")
+                if td_pq.eq(1).text() in strategy['stock']:
+                    hold[td_pq.eq(1).text()].append(td_pq.eq(3).text())
+            dates2.append(d.strftime('%Y-%m-%d'))
+            ndate = ndate - 1
+        d = d - datetime.timedelta(days=1)
+
+    message += date_title(dates2, 13)
+    for (k, vs) in hold.items():
+        message += "  " * (6-len(k[:6])) + k[:6] + " "
+        for v in vs:
+            message += "%10s  " % (v)
+        message += "\n"
 
     tool.output(strategy['name'], message)
     tool.send_email(strategy['receiver'], strategy['name'], message)
