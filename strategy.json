@@ -8,28 +8,23 @@
             "http://hq.sinajs.cn/list="
         ],
         "para": [
-            "603882",
-            "300700",
-            "002893",
-            "300701",
-            "603813",
-            "603106",
             "603533",
-            "603055",
             "002901",
-            "002900",
-            "603963",
-            "603157",
             "603363",
             "300706",
             "300654",
-            "603136",
-            "603378"
-        ],
-        "para1": [
+            "603378",
             "603367",
             "601086",
-            "002902"
+            "002902",
+            "300705",
+            "300707",
+            "603103"
+        ],
+        "para1": [
+            "603110",
+            "002903",
+            "002906"
         ]
     },
     {
@@ -46,7 +41,7 @@
             "zhongc@fundbj.com",
             "chuh@fundbj.com"
         ],
-        "begin": "2017-09-28"
+        "begin": "2017-10-14"
     },
     {
         "strategy": "windIndex",
@@ -59,11 +54,18 @@
                 "name": "博彩指数",
                 "code": "G0005097"
             }
+        ],
+        "receiver": [
+            "wujg@fundbj.com",
+            "zhongc@fundbj.com",
+            "xuex@fundbj.com",
+            "zhengy@fundbj.com",
+            "chuh@fundbj.com"
         ]
     },
     {
         "strategy": "HKEX",
-        "name": "港股通Top10净流入流出",
+        "name": "港股通",
         "url": [
             "http://sc.hkex.com.hk/TuniS/www.hkex.com.hk/chi/csm/DailyStat/",
             "http://sc.hkexnews.hk/TuniS/www.hkexnews.hk/sdw/search/mutualmarket_c.aspx?t=hk"
@@ -79,6 +81,8 @@
             2
         ],
         "receiver": [
+            "wujg@fundbj.com",
+            "zhongc@fundbj.com",
             "zhengy@fundbj.com",
             "chuh@fundbj.com"
         ]

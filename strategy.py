@@ -1,10 +1,11 @@
 import datetime
 import json
+import re
 import threading
 import time
+
 import numpy as np
 import pandas as pd
-
 import wrapt
 from pyquery import PyQuery as pq
 
@@ -12,10 +13,7 @@ import tool
 from global_obj import Global
 from WindPy import w
 
-
 # lock = threading.Lock()
-mail_list = ["wujg@fundbj.com", "zhongc@fundbj.com",
-             "xuex@fundbj.com", "zhengy@fundbj.com", "chuh@fundbj.com"]
 
 
 @wrapt.decorator
@@ -82,9 +80,7 @@ def convertible(strategy):
                                 {"beginDate": strategy['begin'],
                                  "endDate": datetime.date.today().strftime('%Y-%m-%d')},
                                 'get',
-                                {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.15063",
-                                 "Host": "query.sse.com.cn",
-                                 "Referer": "http://www.sse.com.cn/disclosure/bond/announcement/convertible/"}
+                                {"Referer": "http://www.sse.com.cn/disclosure/bond/announcement/convertible/"}
                                 ).decode('UTF-8')
         sh_items1 = json.loads(sh_res1)["result"]  # security_Code证券代码
         sh_items1 = list(
@@ -98,9 +94,7 @@ def convertible(strategy):
                                  "createTime": strategy['begin'] + " 00:00:00",
                                  "createTimeEnd": datetime.date.today().strftime('%Y-%m-%d') + " 23:59:59"},
                                 'get',
-                                {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.15063",
-                                 "Host": "query.sse.com.cn",
-                                 "Referer": "http://www.sse.com.cn/disclosure/bond/announcement/exchangeable/"}
+                                {"Referer": "http://www.sse.com.cn/disclosure/bond/announcement/exchangeable/"}
                                 ).decode('UTF-8')
         sh_items2 = json.loads(sh_res2)["result"]
         sh_items2 = list(filter(lambda x: ('发行公告' in x["docTitle"])or(
@@ -147,14 +141,16 @@ def windIndex(strategy):
                 message = g['name'] + " " + str(dfp.index[-1]) + \
                     "\n同比：" + str(com) + "%\n环比：" + str(seq) + "%"
                 tool.output(strategy['name'], message)
-                tool.send_email(mail_list, strategy['name'], message)
+                tool.send_email(strategy['receiver'],
+                                strategy['name'], message)
         w.stop()
 
 
 @log
 def HKEX(strategy):
-    def parse(arr, dic):
-        for row in dic['content'][1]['table']['tr']:
+    def parse(arr, obj):
+        # 将树状对象提取成数组对象
+        for row in obj['content'][1]['table']['tr']:
             r = row['td'][0]
             if r[1] != '-':
                 arr.append({
@@ -165,9 +161,23 @@ def HKEX(strategy):
                 })
 
     def sign(arr):
+        # 判断数组元素是否符号相同
         _arr = [n for n in arr[1:] if int(n) > 0]
         if len(_arr) == len(arr) or len(_arr) == 0:
             return True
+        else:
+            return False
+
+    def delta(n1, n2, delta):
+        # 判断数组两数变动量
+        num = re.compile(r'^[-+]?[0-9]+\.[0-9]+$')
+        if num.match(n1[:-1]) and num.match(n2[:-1]):
+            n1 = float(n1[:-1])
+            n2 = float(n2[:-1])
+            if n1 != 0 and abs(n2 / n1 - 1) > delta:
+                return True
+            else:
+                return False
         else:
             return False
 
@@ -184,6 +194,7 @@ def HKEX(strategy):
         return reverse
 
     def date_title(dates, n):
+        # 标题行日期格式
         res = " " * n
         res += "  ".join(dates)
         res += "\n"
@@ -206,7 +217,7 @@ def HKEX(strategy):
     sh, hksh, sz, hksz, dates1 = ([], [], [], [], [])
     ndate = strategy['nDate'][0]
     while ndate > 0:
-        if d.weekday() != 5 or d.weekday() != 6:
+        if d.weekday() != 5 and d.weekday() != 6:
             t = datetime.datetime.now().timestamp()
             t_str = str(t * 1000)[0:13]
             param = 'data_tab_daily_' + d.strftime('%Y%m%d') + 'c.js?' + t_str
@@ -226,35 +237,67 @@ def HKEX(strategy):
                 ndate = ndate - 1
         d = d - datetime.timedelta(days=1)
 
-    message = "" + date_title(dates1, 17) + formatter("沪股通", identify(sh, strategy['nDate'][0])) + formatter("港股通（沪）", identify(
+    message = "1 Top10净流入流出\n" + date_title(dates1, 17) + formatter("沪股通", identify(sh, strategy['nDate'][0])) + formatter("港股通（沪）", identify(
         hksh, strategy['nDate'][0])) + formatter("深股通", identify(sz, strategy['nDate'][0])) + formatter("港股通（深）", identify(hksz, strategy['nDate'][0]))
 
     message += "-----------------------------\n"
+    message += "2 持仓股南下资金占比\n"
 
     d = datetime.date.today()
     hold = {k: [] for k in strategy['stock']}
+    change = {}
     dates2 = []
     ndate = strategy['nDate'][1]
+    __VIEWSTATE = ''
+    __VIEWSTATEGENERATOR = ''
+    __EVENTVALIDATION = ''
 
     while ndate > 0:
-        if d.weekday() != 5 or d.weekday() != 6:
-            html = tool.get_html(strategy['url'][1], {
-                "ddlShareholdingDay": str(d.day),
-                "ddlShareholdingMonth":  "0" * (2 - len(str(d.month))) + str(d.month),
-                "ddlShareholdingYear": str(d.year)}, method='post').decode('utf-8')
+        d = d - datetime.timedelta(days=1)
+        if d.weekday() != 5 and d.weekday() != 6:
+            if __VIEWSTATE == '':
+                html = tool.get_html(
+                    strategy['url'][1], {}, method='get').decode('utf-8')
+            else:
+                html = tool.get_html(strategy['url'][1], {
+                    "__VIEWSTATE": __VIEWSTATE,
+                    "__VIEWSTATEGENERATOR": __VIEWSTATEGENERATOR,
+                    "__EVENTVALIDATION": __EVENTVALIDATION,
+                    "ddlShareholdingDay": "0" * (2 - len(str(d.day))) + str(d.day),
+                    "ddlShareholdingMonth": "0" * (2 - len(str(d.month))) + str(d.month),
+                    "ddlShareholdingYear": str(d.year),
+                    "btnSearch.x": "43",
+                    "btnSearch.y": "8"}, method='post').decode('utf-8')
 
             data = pq(html)(".result-table tr")
+            __VIEWSTATE = pq(html)("#__VIEWSTATE").val()
+            __VIEWSTATEGENERATOR = pq(html)("#__VIEWSTATEGENERATOR").val()
+            __EVENTVALIDATION = pq(html)("#__EVENTVALIDATION").val()
             for tr in data:
-                td_pq = pq(tr)("td")
-                if td_pq.eq(1).text() in strategy['stock']:
-                    hold[td_pq.eq(1).text()].append(td_pq.eq(3).text())
+                code = pq(tr)("td:eq(1)").text()
+                percentage = pq(tr)("td:eq(3)").text()
+                if code in strategy['stock']:
+                    hold[code].append(percentage)
+                if code in change:
+                    change[code].append(percentage)
+                else:
+                    change[code] = [percentage]
             dates2.append(d.strftime('%Y-%m-%d'))
             ndate = ndate - 1
-        d = d - datetime.timedelta(days=1)
 
     message += date_title(dates2, 13)
     for (k, vs) in hold.items():
-        message += "  " * (6-len(k[:6])) + k[:6] + " "
+        message += "  " * (6 - len(k[:6])) + k[:6] + " "
+        for v in vs:
+            message += "%10s  " % (v)
+        message += "\n"
+
+    message += "-----------------------------\n"
+    message += "3 南下资金变动(大于10%)\n"
+    change = {k: v for k, v in change.items() if delta(v[0], v[1], 0.1)}
+    message += date_title(dates2, 13)
+    for (k, vs) in change.items():
+        message += "  " * (6 - len(k[:6])) + k[:6] + " "
         for v in vs:
             message += "%10s  " % (v)
         message += "\n"
