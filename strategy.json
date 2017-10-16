@@ -9,7 +9,6 @@
         ],
         "para": [
             "603533",
-            "002901",
             "603363",
             "300706",
             "300654",
@@ -19,12 +18,15 @@
             "002902",
             "300705",
             "300707",
-            "603103"
-        ],
-        "para1": [
+            "603103",
             "603110",
             "002903",
             "002906"
+        ],
+        "para1": [
+            "603499",
+            "300708",
+            "002905"
         ]
     },
     {
@@ -68,13 +70,16 @@
         "name": "港股通",
         "url": [
             "http://sc.hkex.com.hk/TuniS/www.hkex.com.hk/chi/csm/DailyStat/",
-            "http://sc.hkexnews.hk/TuniS/www.hkexnews.hk/sdw/search/mutualmarket_c.aspx?t=hk"
+            "http://sc.hkexnews.hk/TuniS/www.hkexnews.hk/sdw/search/mutualmarket_c.aspx?t=hk",
+            "http://www.hkexnews.hk/sdw/search/mutualmarket_c.aspx?t=sh",
+            "http://www.hkexnews.hk/sdw/search/mutualmarket_c.aspx?t=sz"
         ],
         "stock": [
             "山东新华制药股份",
             "东江环保",
             "中国建筑国际",
-            "上海医药"
+            "上海医药",
+            "中航科工"
         ],
         "nDate": [
             3,

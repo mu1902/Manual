@@ -168,30 +168,38 @@ def HKEX(strategy):
         else:
             return False
 
-    def delta(n1, n2, delta):
-        # 判断数组两数变动量
+    def delta(n1, n2):
+        # 计算两数变动量
         num = re.compile(r'^[-+]?[0-9]+\.[0-9]+$')
         if num.match(n1[:-1]) and num.match(n2[:-1]):
             n1 = float(n1[:-1])
             n2 = float(n2[:-1])
-            if n1 != 0 and abs(n2 / n1 - 1) > delta:
-                return True
+            if n2 != 0:
+                return n1 / n2 - 1
             else:
-                return False
+                return n1 - n2
         else:
-            return False
+            return 0
 
-    def identify(rows, n):
-        reverse = {}
+    def filter(rows, n):
+        dic = {}
         for row in rows:
-            if row['code'] in reverse:
-                reverse[row['code']].append(row['net'])
+            if row['code'] in dic:
+                dic[row['code']].append(row['net'])
             else:
-                reverse[row['code']] = [row['name'], row['net']]
+                dic[row['code']] = [row['name'], row['net']]
+        dic = {k: v for k, v in dic.items() if len(v) ==
+               n + 1 and sign(v)}
+        return dic
 
-        reverse = {k: v for k, v in reverse.items() if len(v) ==
-                   n + 1 and sign(v)}
-        return reverse
+    def filter2(dic, d):
+        if dic:
+            lis = [(k, v[0], v[1], delta(v[0], v[1]))
+                   for k, v in dic.items() if len(v) == 2 and abs(delta(v[0], v[1])) > d]
+            lis = sorted(lis, key=lambda item: item[3], reverse=True)
+        else:
+            lis = []
+        return lis
 
     def date_title(dates, n):
         # 标题行日期格式
@@ -213,79 +221,95 @@ def HKEX(strategy):
         res += "\n"
         return res
 
-    d = datetime.date.today()
-    sh, hksh, sz, hksz, dates1 = ([], [], [], [], [])
-    ndate = strategy['nDate'][0]
-    while ndate > 0:
-        if d.weekday() != 5 and d.weekday() != 6:
-            t = datetime.datetime.now().timestamp()
-            t_str = str(t * 1000)[0:13]
-            param = 'data_tab_daily_' + d.strftime('%Y%m%d') + 'c.js?' + t_str
-            html = tool.get_html(
-                strategy['url'][0] + param, method='get')
-            if html != "":
-                data = json.loads(html.decode('utf-8').split(' = ')[1])
-                # 沪股通
-                parse(sh, data[0])
-                # 港股通（沪）
-                parse(hksh, data[1])
-                # 深股通
-                parse(sz, data[2])
-                # 港股通（深）
-                parse(hksz, data[3])
-                dates1.append(d.strftime('%Y-%m-%d'))
-                ndate = ndate - 1
-        d = d - datetime.timedelta(days=1)
+    def formatter2(lis):
+        res = ""
+        for item in lis:
+            res += "  " * (6 - len(item[0][:6])) + item[0][:6] + " "
+            res += "%10s  " % (item[1])
+            res += "%10s  " % (item[2])
+            res += "%10.2f%%  " % (item[3] * 100)
+            res += "\n"
+        return res
 
-    message = "1 Top10净流入流出\n" + date_title(dates1, 17) + formatter("沪股通", identify(sh, strategy['nDate'][0])) + formatter("港股通（沪）", identify(
-        hksh, strategy['nDate'][0])) + formatter("深股通", identify(sz, strategy['nDate'][0])) + formatter("港股通（深）", identify(hksz, strategy['nDate'][0]))
+    message = ''
+    # d = datetime.date.today()
+    # sh, hksh, sz, hksz, dates1 = ([], [], [], [], [])
+    # ndate = strategy['nDate'][0]
+    # while ndate > 0:
+    #     if d.weekday() != 5 and d.weekday() != 6:
+    #         t = datetime.datetime.now().timestamp()
+    #         t_str = str(t * 1000)[0:13]
+    #         param = 'data_tab_daily_' + d.strftime('%Y%m%d') + 'c.js?' + t_str
+    #         html = tool.get_html(
+    #             strategy['url'][0] + param, method='get')
+    #         if html != "":
+    #             data = json.loads(html.decode('utf-8').split(' = ')[1])
+    #             # 沪股通
+    #             parse(sh, data[0])
+    #             # 港股通（沪）
+    #             parse(hksh, data[1])
+    #             # 深股通
+    #             parse(sz, data[2])
+    #             # 港股通（深）
+    #             parse(hksz, data[3])
+    #             dates1.append(d.strftime('%Y-%m-%d'))
+    #             ndate = ndate - 1
+    #     d = d - datetime.timedelta(days=1)
 
-    message += "-----------------------------\n"
-    message += "2 持仓股南下资金占比\n"
+    # message += "1 Top10净流入流出\n" + date_title(dates1, 17) + formatter("沪股通", filter(sh, strategy['nDate'][0])) + formatter("港股通（沪）", filter(
+    # hksh, strategy['nDate'][0])) + formatter("深股通", filter(sz,
+    # strategy['nDate'][0])) + formatter("港股通（深）", filter(hksz,
+    # strategy['nDate'][0]))
 
-    d = datetime.date.today()
     hold = {k: [] for k in strategy['stock']}
-    change = {}
-    dates2 = []
+    change = [{}, {}, {}]
+    dates2 = [[], [], []]
     ndate = strategy['nDate'][1]
+    d = datetime.date.today()
     __VIEWSTATE = ''
     __VIEWSTATEGENERATOR = ''
     __EVENTVALIDATION = ''
 
-    while ndate > 0:
-        d = d - datetime.timedelta(days=1)
-        if d.weekday() != 5 and d.weekday() != 6:
-            if __VIEWSTATE == '':
-                html = tool.get_html(
-                    strategy['url'][1], {}, method='get').decode('utf-8')
-            else:
-                html = tool.get_html(strategy['url'][1], {
-                    "__VIEWSTATE": __VIEWSTATE,
-                    "__VIEWSTATEGENERATOR": __VIEWSTATEGENERATOR,
-                    "__EVENTVALIDATION": __EVENTVALIDATION,
-                    "ddlShareholdingDay": "0" * (2 - len(str(d.day))) + str(d.day),
-                    "ddlShareholdingMonth": "0" * (2 - len(str(d.month))) + str(d.month),
-                    "ddlShareholdingYear": str(d.year),
-                    "btnSearch.x": "43",
-                    "btnSearch.y": "8"}, method='post').decode('utf-8')
-
-            data = pq(html)(".result-table tr")
-            __VIEWSTATE = pq(html)("#__VIEWSTATE").val()
-            __VIEWSTATEGENERATOR = pq(html)("#__VIEWSTATEGENERATOR").val()
-            __EVENTVALIDATION = pq(html)("#__EVENTVALIDATION").val()
-            for tr in data:
-                code = pq(tr)("td:eq(1)").text()
-                percentage = pq(tr)("td:eq(3)").text()
-                if code in strategy['stock']:
-                    hold[code].append(percentage)
-                if code in change:
-                    change[code].append(percentage)
+    for i in range(3):
+        while ndate > 0:
+            d = d - datetime.timedelta(days=1)
+            if d.weekday() != 5 and d.weekday() != 6:
+                if __VIEWSTATE == '':
+                    html = tool.get_html(
+                        strategy['url'][i + 1], {}, method='get').decode('utf-8')
                 else:
-                    change[code] = [percentage]
-            dates2.append(d.strftime('%Y-%m-%d'))
-            ndate = ndate - 1
+                    html = tool.get_html(strategy['url'][i + 1], {
+                        "__VIEWSTATE": __VIEWSTATE,
+                        "__VIEWSTATEGENERATOR": __VIEWSTATEGENERATOR,
+                        "__EVENTVALIDATION": __EVENTVALIDATION,
+                        "ddlShareholdingDay": "0" * (2 - len(str(d.day))) + str(d.day),
+                        "ddlShareholdingMonth": "0" * (2 - len(str(d.month))) + str(d.month),
+                        "ddlShareholdingYear": str(d.year),
+                        "btnSearch.x": "43",
+                        "btnSearch.y": "8"}, method='post').decode('utf-8')
 
-    message += date_title(dates2, 13)
+                data = pq(html)(".result-table tr")
+                __VIEWSTATE = pq(html)("#__VIEWSTATE").val()
+                __VIEWSTATEGENERATOR = pq(html)("#__VIEWSTATEGENERATOR").val()
+                __EVENTVALIDATION = pq(html)("#__EVENTVALIDATION").val()
+                for tr in data:
+                    code = pq(tr)("td:eq(1)").text()
+                    percentage = pq(tr)("td:eq(3)").text()
+                    if code in strategy['stock'] and i == 0:
+                        hold[code].append(percentage)
+                    if code in change[i]:
+                        change[i][code].append(percentage)
+                    else:
+                        change[i][code] = [percentage]
+                dates2[i].append(d.strftime('%Y-%m-%d'))
+                ndate = ndate - 1
+        __VIEWSTATE = ''
+        ndate = strategy['nDate'][1]
+        d = datetime.date.today()
+
+    message += "-----------------------------\n"
+    message += "2 持仓股南下资金占比\n"
+    message += date_title(dates2[0], 13)
     for (k, vs) in hold.items():
         message += "  " * (6 - len(k[:6])) + k[:6] + " "
         for v in vs:
@@ -293,14 +317,19 @@ def HKEX(strategy):
         message += "\n"
 
     message += "-----------------------------\n"
-    message += "3 南下资金变动(大于10%)\n"
-    change = {k: v for k, v in change.items() if delta(v[0], v[1], 0.1)}
-    message += date_title(dates2, 13)
-    for (k, vs) in change.items():
-        message += "  " * (6 - len(k[:6])) + k[:6] + " "
-        for v in vs:
-            message += "%10s  " % (v)
-        message += "\n"
+    message += "3 港股通占比变动(大于10%)\n"
+    message += date_title(dates2[0], 13)
+    message += formatter2(filter2(change[0], 0.1))
+
+    message += "-----------------------------\n"
+    message += "4 沪港通占比变动(大于50%)\n"
+    message += date_title(dates2[1], 13)
+    message += formatter2(filter2(change[1], 0.5))
+
+    message += "-----------------------------\n"
+    message += "5 深港通占比变动(大于50%)\n"
+    message += date_title(dates2[2], 13)
+    message += formatter2(filter2(change[2], 0.5))
 
     tool.output(strategy['name'], message)
-    tool.send_email(strategy['receiver'], strategy['name'], message)
+    # tool.send_email(strategy['receiver'], strategy['name'], message)
