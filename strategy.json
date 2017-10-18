@@ -12,8 +12,6 @@
             "603363",
             "300706",
             "300654",
-            "603378",
-            "603367",
             "601086",
             "002902",
             "300705",
@@ -21,12 +19,14 @@
             "603103",
             "603110",
             "002903",
-            "002906"
-        ],
-        "para1": [
+            "002906",
             "603499",
             "300708",
-            "002905"
+            "002905",
+            "603829"
+        ],
+        "para1": [
+            "603396"
         ]
     },
     {
@@ -71,8 +71,8 @@
         "url": [
             "http://sc.hkex.com.hk/TuniS/www.hkex.com.hk/chi/csm/DailyStat/",
             "http://sc.hkexnews.hk/TuniS/www.hkexnews.hk/sdw/search/mutualmarket_c.aspx?t=hk",
-            "http://www.hkexnews.hk/sdw/search/mutualmarket_c.aspx?t=sh",
-            "http://www.hkexnews.hk/sdw/search/mutualmarket_c.aspx?t=sz"
+            "http://sc.hkexnews.hk/TuniS/www.hkexnews.hk/sdw/search/mutualmarket_c.aspx?t=sh",
+            "http://sc.hkexnews.hk/TuniS/www.hkexnews.hk/sdw/search/mutualmarket_c.aspx?t=sz"
         ],
         "stock": [
             "山东新华制药股份",

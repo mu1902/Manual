@@ -232,34 +232,34 @@ def HKEX(strategy):
         return res
 
     message = ''
-    # d = datetime.date.today()
-    # sh, hksh, sz, hksz, dates1 = ([], [], [], [], [])
-    # ndate = strategy['nDate'][0]
-    # while ndate > 0:
-    #     if d.weekday() != 5 and d.weekday() != 6:
-    #         t = datetime.datetime.now().timestamp()
-    #         t_str = str(t * 1000)[0:13]
-    #         param = 'data_tab_daily_' + d.strftime('%Y%m%d') + 'c.js?' + t_str
-    #         html = tool.get_html(
-    #             strategy['url'][0] + param, method='get')
-    #         if html != "":
-    #             data = json.loads(html.decode('utf-8').split(' = ')[1])
-    #             # 沪股通
-    #             parse(sh, data[0])
-    #             # 港股通（沪）
-    #             parse(hksh, data[1])
-    #             # 深股通
-    #             parse(sz, data[2])
-    #             # 港股通（深）
-    #             parse(hksz, data[3])
-    #             dates1.append(d.strftime('%Y-%m-%d'))
-    #             ndate = ndate - 1
-    #     d = d - datetime.timedelta(days=1)
+    d = datetime.date.today()
+    sh, hksh, sz, hksz, dates1 = ([], [], [], [], [])
+    ndate = strategy['nDate'][0]
+    while ndate > 0:
+        if d.weekday() != 5 and d.weekday() != 6:
+            t = datetime.datetime.now().timestamp()
+            t_str = str(t * 1000)[0:13]
+            param = 'data_tab_daily_' + d.strftime('%Y%m%d') + 'c.js?' + t_str
+            html = tool.get_html(
+                strategy['url'][0] + param, method='get')
+            if html != "":
+                data = json.loads(html.decode('utf-8').split(' = ')[1])
+                # 沪股通
+                parse(sh, data[0])
+                # 港股通（沪）
+                parse(hksh, data[1])
+                # 深股通
+                parse(sz, data[2])
+                # 港股通（深）
+                parse(hksz, data[3])
+                dates1.append(d.strftime('%Y-%m-%d'))
+                ndate = ndate - 1
+        d = d - datetime.timedelta(days=1)
 
-    # message += "1 Top10净流入流出\n" + date_title(dates1, 17) + formatter("沪股通", filter(sh, strategy['nDate'][0])) + formatter("港股通（沪）", filter(
-    # hksh, strategy['nDate'][0])) + formatter("深股通", filter(sz,
-    # strategy['nDate'][0])) + formatter("港股通（深）", filter(hksz,
-    # strategy['nDate'][0]))
+    message += "1 Top10净流入流出\n" + date_title(dates1, 17) + formatter("沪股通", filter(sh, strategy['nDate'][0])) + formatter("港股通（沪）", filter(
+    hksh, strategy['nDate'][0])) + formatter("深股通", filter(sz,
+    strategy['nDate'][0])) + formatter("港股通（深）", filter(hksz,
+    strategy['nDate'][0]))
 
     hold = {k: [] for k in strategy['stock']}
     change = [{}, {}, {}]
@@ -332,4 +332,4 @@ def HKEX(strategy):
     message += formatter2(filter2(change[2], 0.5))
 
     tool.output(strategy['name'], message)
-    # tool.send_email(strategy['receiver'], strategy['name'], message)
+    tool.send_email(strategy['receiver'], strategy['name'], message)
