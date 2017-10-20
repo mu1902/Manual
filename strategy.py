@@ -36,7 +36,13 @@ def newstock(strategy):
             tool.wait(strategy['freq'])
             continue
 
-        for s in strategy['para']:
+        try:
+            file_object = open('stock.txt', mode='r', encoding='UTF-8')
+            stocks = file_object.readlines()
+        finally:
+            file_object.close()
+
+        for s in stocks:
             if s[0] == '0' or s[0] == '3':
                 url = strategy['url'][0] + 'sz' + s
             elif s[0] == '6':
@@ -332,4 +338,4 @@ def HKEX(strategy):
     message += formatter2(filter2(change[2], 0.5))
 
     tool.output(strategy['name'], message)
-    tool.send_email(strategy['receiver'], strategy['name'], message)
+    # tool.send_email(strategy['receiver'], strategy['name'], message)
