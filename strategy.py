@@ -338,4 +338,4 @@ def HKEX(strategy):
     message += formatter2(filter2(change[2], 0.5))
 
     tool.output(strategy['name'], message)
-    # tool.send_email(strategy['receiver'], strategy['name'], message)
+    tool.send_email(strategy['receiver'], strategy['name'], message)
