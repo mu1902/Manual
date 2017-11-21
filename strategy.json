@@ -22,7 +22,7 @@
             "zhongc@fundbj.com",
             "chuh@fundbj.com"
         ],
-        "begin": "2017-10-20"
+        "begin": "2017-11-21"
     },
     {
         "strategy": "windIndex",
@@ -37,7 +37,6 @@
             }
         ],
         "receiver": [
-            "wujg@fundbj.com",
             "zhongc@fundbj.com",
             "xuex@fundbj.com",
             "zhengy@fundbj.com",
