@@ -11,7 +11,6 @@
     {
         "strategy": "convertible",
         "name": "可转债公告",
-        "freq": "5h",
         "url": [
             "http://query.sse.com.cn/infodisplay/queryBulletinKzzTipsNew.do?",
             "http://query.sse.com.cn/commonSoaQuery.do?",
@@ -22,7 +21,7 @@
             "zhongc@fundbj.com",
             "chuh@fundbj.com"
         ],
-        "begin": "2017-11-21"
+        "begin": "2017-11-27"
     },
     {
         "strategy": "windIndex",

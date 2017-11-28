@@ -80,52 +80,50 @@ def newstock(strategy):
 
 @log
 def convertible(strategy):
-    while not Global.exited_flag:
-        # 上交所
-        sh_res1 = tool.get_html(strategy['url'][0],
-                                {"beginDate": strategy['begin'],
-                                 "endDate": datetime.date.today().strftime('%Y-%m-%d')},
-                                'get',
-                                {"Referer": "http://www.sse.com.cn/disclosure/bond/announcement/convertible/"}
-                                ).decode('UTF-8')
-        sh_items1 = json.loads(sh_res1)["result"]  # security_Code证券代码
-        sh_items1 = list(
-            filter(lambda x: ('发行公告' in x["title"])or('中签' in x["title"])or('上市' in x["title"]), sh_items1))
-        sh_out = '\n'
-        for i in sh_items1:
-            sh_out += i["title"] + '\nhttp://www.sse.com.cn' + i["URL"] + '\n'
+    # 上交所
+    sh_res1 = tool.get_html(strategy['url'][0],
+                            {"beginDate": strategy['begin'],
+                                "endDate": datetime.date.today().strftime('%Y-%m-%d')},
+                            'get',
+                            {"Referer": "http://www.sse.com.cn/disclosure/bond/announcement/convertible/"}
+                            ).decode('UTF-8')
+    sh_items1 = json.loads(sh_res1)["result"]  # security_Code证券代码
+    sh_items1 = list(
+        filter(lambda x: ('发行公告' in x["title"])or('中签' in x["title"])or('上市' in x["title"]), sh_items1))
+    sh_out = '\n'
+    for i in sh_items1:
+        sh_out += i["title"] + '\nhttp://www.sse.com.cn' + i["URL"] + '\n'
 
-        sh_res2 = tool.get_html(strategy['url'][1],
-                                {"channelId": "9868", "sqlId": "BS_GGLL", "siteId": "28", "extGGDL": "1101", "extGGLX": "11",
-                                 "createTime": strategy['begin'] + " 00:00:00",
-                                 "createTimeEnd": datetime.date.today().strftime('%Y-%m-%d') + " 23:59:59"},
-                                'get',
-                                {"Referer": "http://www.sse.com.cn/disclosure/bond/announcement/exchangeable/"}
-                                ).decode('UTF-8')
-        sh_items2 = json.loads(sh_res2)["result"]
-        sh_items2 = list(filter(lambda x: ('发行公告' in x["docTitle"])or(
-            '中签' in x["docTitle"])or('上市' in x["docTitle"]), sh_items2))
-        for i in sh_items2:
-            sh_out += i["docTitle"] + '\nhttp://' + i["docURL"] + '\n'
+    sh_res2 = tool.get_html(strategy['url'][1],
+                            {"channelId": "9868", "sqlId": "BS_GGLL", "siteId": "28", "extGGDL": "1101", "extGGLX": "11",
+                                "createTime": strategy['begin'] + " 00:00:00",
+                                "createTimeEnd": datetime.date.today().strftime('%Y-%m-%d') + " 23:59:59"},
+                            'get',
+                            {"Referer": "http://www.sse.com.cn/disclosure/bond/announcement/exchangeable/"}
+                            ).decode('UTF-8')
+    sh_items2 = json.loads(sh_res2)["result"]
+    sh_items2 = list(filter(lambda x: ('发行公告' in x["docTitle"])or(
+        '中签' in x["docTitle"])or('上市' in x["docTitle"]), sh_items2))
+    for i in sh_items2:
+        sh_out += i["docTitle"] + '\nhttp://' + i["docURL"] + '\n'
 
-        # 深交所
-        sz_res1 = tool.get_html(strategy['url'][2],
-                                {"noticeType": "0109",
-                                 #  "keyword": "发行公告".encode('GB2312'),
-                                 "startTime": strategy['begin'],
-                                 "endTime": datetime.date.today().strftime('%Y-%m-%d')}).decode('GB2312')
-        sz_items1 = pq(sz_res1)('.td2 a').items()  # <a href="PDF相对地址">公告名称</a>
-        sz_items1 = list(
-            filter(lambda x: ('发行公告' in x.text())or('中签' in x.text())or('上市' in x.text()), sz_items1))
-        sz_out = '\n'
-        for i in sz_items1:
-            sz_out += i.text() + '\nhttp://disclosure.szse.cn/m/' + i.attr("href") + '\n'
+    # 深交所
+    sz_res1 = tool.get_html(strategy['url'][2],
+                            {"noticeType": "0109",
+                                #  "keyword": "发行公告".encode('GB2312'),
+                                "startTime": strategy['begin'],
+                                "endTime": datetime.date.today().strftime('%Y-%m-%d')}).decode('GB2312')
+    sz_items1 = pq(sz_res1)('.td2 a').items()  # <a href="PDF相对地址">公告名称</a>
+    sz_items1 = list(
+        filter(lambda x: ('发行公告' in x.text())or('中签' in x.text())or('上市' in x.text()), sz_items1))
+    sz_out = '\n'
+    for i in sz_items1:
+        sz_out += i.text() + '\nhttp://disclosure.szse.cn/m/' + i.attr("href") + '\n'
 
-        if (len(sh_items1) + len(sh_items2) + len(list(sz_items1))) > 0:
-            tool.send_email(strategy['receiver'],
-                            strategy['name'], sh_out + sz_out)
-            tool.output(strategy['name'], "上交所：" + sh_out + "\n深交所：" + sz_out)
-        tool.wait(strategy['freq'])
+    if (len(sh_items1) + len(sh_items2) + len(list(sz_items1))) > 0:
+        tool.send_email(strategy['receiver'],
+                        strategy['name'], sh_out + sz_out)
+        tool.output(strategy['name'], "上交所：" + sh_out + "\n深交所：" + sz_out)
 
 
 @log
