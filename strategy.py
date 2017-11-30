@@ -81,6 +81,8 @@ def newstock(strategy):
 @log
 def convertible(strategy):
     # 上交所
+    if strategy['disabled'] == 'Y':
+        return None
     sh_res1 = tool.get_html(strategy['url'][0],
                             {"beginDate": strategy['begin'],
                                 "endDate": datetime.date.today().strftime('%Y-%m-%d')},

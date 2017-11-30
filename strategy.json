@@ -21,7 +21,8 @@
             "zhongc@fundbj.com",
             "chuh@fundbj.com"
         ],
-        "begin": "2017-11-27"
+        "begin": "2017-12-01",
+        "disabled": "Y"
     },
     {
         "strategy": "windIndex",
