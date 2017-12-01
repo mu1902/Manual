@@ -141,10 +141,9 @@ def windIndex(strategy):
                 # df = pd.DataFrame({'date':index.Times,'data':index.Data[0]})
                 # df.set_index('date', inplace=True)
                 df = pd.DataFrame({'data': index.Data[0]}, index=index.Times)
-                dfp = df.to_period()
-                com = ((dfp['data'][-1] / dfp['data'][-2] - 1) * 100).round(2)
-                seq = ((dfp['data'][-1] / dfp['data'][-12] - 1) * 100).round(2)
-                message = g['name'] + " " + str(dfp.index[-1]) + \
+                com = ((df['data'][-1] / df['data'][-2] - 1) * 100).round(2)
+                seq = ((df['data'][-1] / df['data'][-12] - 1) * 100).round(2)
+                message = g['name'] + " " + str(df.index[-1]) + \
                     "\n同比：" + str(com) + "%\n环比：" + str(seq) + "%"
                 tool.output(strategy['name'], message)
                 tool.send_email(strategy['receiver'],
@@ -154,6 +153,9 @@ def windIndex(strategy):
 
 @log
 def HKEX(strategy):
+    if strategy['disabled'] == 'Y':
+        return None
+
     def parse(arr, obj):
         # 将树状对象提取成数组对象
         for row in obj['content'][1]['table']['tr']:
