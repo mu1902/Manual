@@ -35,8 +35,9 @@ if __name__ == '__main__':
     try:
         file_object = open('strategy.json', mode='r', encoding='UTF-8')
         strategies = json.load(file_object)
-    finally:
         file_object.close()
+    except:
+        print("无法读取配置文件")
 
     for s in strategies:
         th = Thread(target=eval(s['strategy']), args=(s,))
