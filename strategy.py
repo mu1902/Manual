@@ -37,7 +37,8 @@ def newstock(strategy):
             continue
 
         try:
-            file_object = open('stock.txt', mode='r', encoding='UTF-8')
+            file_object = open(Global._dir + '\stock.txt',
+                               mode='r', encoding='UTF-8')
             stocks = file_object.readlines()
         finally:
             file_object.close()
@@ -265,9 +266,9 @@ def HKEX(strategy):
         d = d - datetime.timedelta(days=1)
 
     message += "1 Top10净流入流出\n" + date_title(dates1, 17) + formatter("沪股通", filter(sh, strategy['nDate'][0])) + formatter("港股通（沪）", filter(
-    hksh, strategy['nDate'][0])) + formatter("深股通", filter(sz,
-    strategy['nDate'][0])) + formatter("港股通（深）", filter(hksz,
-    strategy['nDate'][0]))
+        hksh, strategy['nDate'][0])) + formatter("深股通", filter(sz,
+                                                               strategy['nDate'][0])) + formatter("港股通（深）", filter(hksz,
+                                                                                                                   strategy['nDate'][0]))
 
     hold = {k: [] for k in strategy['stock']}
     change = [{}, {}, {}]
