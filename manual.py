@@ -25,12 +25,12 @@ def sigint_handler(signum, frame):
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, sigint_handler)
 
-    # SetConsoleTitle("Monitor")
-    # sleep(1)
-    # hwnd = FindWindow(None, "Monitor")
-    # SetForegroundWindow(hwnd)
-    # SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 500, 450, SWP_NOMOVE |
-    #              SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_SHOWWINDOW)
+    SetConsoleTitle("Monitor")
+    sleep(1)
+    hwnd = FindWindow(None, "Monitor")
+    SetForegroundWindow(hwnd)
+    SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 500, 450, SWP_NOMOVE |
+                 SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_SHOWWINDOW)
 
     try:
         file_object = open(Global._dir + '\strategy.json', mode='r', encoding='UTF-8')
