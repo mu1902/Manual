@@ -22,6 +22,22 @@ def sigint_handler(signum, frame):
     sys.exit()
 
 
+def isHoliday(day):
+    days = []
+    try:
+        file_object = open(_dir + '/restday.txt', mode='r', encoding='UTF-8')
+        days = file_object.readlines()
+        file_object.close()
+    except FileNotFoundError as e:
+        print(e)
+
+    days = [datetime.datetime.strptime(d[:-1], "%Y.%m.%d") for d in days]
+    if day.weekday() == 5 or day.weekday() == 6 or day in days:
+        return True
+    else:
+        return False
+
+
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, sigint_handler)
 
@@ -33,17 +49,19 @@ if __name__ == '__main__':
                  SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_SHOWWINDOW)
 
     try:
-        file_object = open(Global._dir + '\strategy.json', mode='r', encoding='UTF-8')
+        file_object = open(Global._dir + '\strategy.json',
+                           mode='r', encoding='UTF-8')
         strategies = json.load(file_object)
         file_object.close()
     except:
         print("无法读取配置文件")
 
-    for s in strategies:
-        th = Thread(target=eval(s['strategy']), args=(s,))
-        th.setDaemon(True)
-        th.start()
-        ths.append(th)
+    if not isHoliday(datetime.date.today()):
+        for s in strategies:
+            th = Thread(target=eval(s['strategy']), args=(s,))
+            th.setDaemon(True)
+            th.start()
+            ths.append(th)
 
     while True:
         alive = False
