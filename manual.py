@@ -25,7 +25,7 @@ def sigint_handler(signum, frame):
 def isHoliday(day):
     days = []
     try:
-        file_object = open(_dir + '/restday.txt', mode='r', encoding='UTF-8')
+        file_object = open(Global._dir + '/restday.txt', mode='r', encoding='UTF-8')
         days = file_object.readlines()
         file_object.close()
     except FileNotFoundError as e:
