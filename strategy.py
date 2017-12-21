@@ -31,10 +31,14 @@ def newstock(strategy):
         d = datetime.datetime.now()
         d1 = datetime.datetime.now().replace(hour=9, minute=25, second=0, microsecond=0)
         d2 = datetime.datetime.now().replace(hour=15, minute=0, second=0, microsecond=0)
-        in_time = d > d1 and d < d2
-        if not in_time:
+        pre_time = d < d1
+        off_time = d > d2
+        if in_time:
             tool.wait(strategy['freq'])
             continue
+
+        if off_time:
+            break
 
         try:
             file_object = open(Global._dir + '\stock.txt',
