@@ -33,7 +33,7 @@ def newstock(strategy):
         d2 = datetime.datetime.now().replace(hour=15, minute=0, second=0, microsecond=0)
         pre_time = d < d1
         off_time = d > d2
-        if in_time:
+        if pre_time:
             tool.wait(strategy['freq'])
             continue
 
