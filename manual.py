@@ -31,6 +31,7 @@ def isHoliday(day):
     except FileNotFoundError as e:
         print(e)
 
+    day = datetime.datetime.strptime(str(day),'%Y-%m-%d')
     days = [datetime.datetime.strptime(d[:-1], "%Y.%m.%d") for d in days]
     if day.weekday() == 5 or day.weekday() == 6 or day in days:
         return True
