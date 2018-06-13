@@ -84,6 +84,71 @@ def newstock(strategy):
 
 
 @log
+def fluctuation(strategy):
+    def mm(arr):
+        max = 0
+        min = 9999
+        for i in arr:
+            max = float(i) if float(i) > max else max
+            min = float(i) if float(i) < min else min
+        return max / min - 1
+
+    while not Global.exited_flag:
+        d = datetime.datetime.now()
+        d1 = datetime.datetime.now().replace(hour=9, minute=25, second=0, microsecond=0)
+        d2 = datetime.datetime.now().replace(hour=15, minute=0, second=0, microsecond=0)
+        pre_time = d < d1
+        off_time = d > d2
+        if pre_time:
+            tool.wait(strategy['freq'])
+            continue
+
+        # if off_time:
+        #     break
+
+        try:
+            file_object = open(Global._dir + '\stock1.txt',
+                               mode='r', encoding='UTF-8')
+            stocks = file_object.readlines()
+        finally:
+            file_object.close()
+
+        url = strategy['url'][0]
+        data = {}
+        for i in range(len(stocks)):
+            stocks[i] = stocks[i].replace("\n", "")
+            data[stocks[i]] = []
+            if len(stocks[i]) == 5:
+                url += 'hk' + stocks[i] + ','
+            elif stocks[i][0] == '0' or stocks[i][0] == '3':
+                url += 'sz' + stocks[i] + ','
+            elif stocks[i][0] == '6':
+                url += 'sh' + stocks[i] + ','
+            else:
+                continue
+
+        ret = tool.get_html(url).decode('gb2312').split(';')
+        for i in range(len(stocks)):
+            if len(stocks[i]) == 5:
+                data[stocks[i]].append(ret[i].split(',')[6])
+            elif len(stocks[i]) == 6:
+                data[stocks[i]].append(ret[i].split(',')[3])
+            else:
+                continue
+            if len(data[stocks[i]]) > 10:
+                data[stocks[i]].pop(0)
+
+        message = ''
+        for k, v in data.items():
+            r = mm(v)
+            if r > strategy['range']
+                message += k + ':' + str(r * 100) + '%\n'
+
+        tool.output(strategy['name'], message)
+        tool.wait(strategy['freq'])
+
+
+@log
 def convertible(strategy):
     # 上交所
     if strategy['disabled'] == 'Y':

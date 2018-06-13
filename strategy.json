@@ -28,7 +28,7 @@
         "strategy": "windIndex",
         "name": "Wind指数",
         "period": [
-            1
+            3
         ],
         "para": [
             {
@@ -55,9 +55,7 @@
         "stock": [
             "山东新华制药股份",
             "东江环保",
-            "中国建筑国际",
-            "上海医药",
-            "中航科工"
+            "中国建筑国际"
         ],
         "nDate": [
             3,
@@ -68,6 +66,17 @@
             "zhongc@fundbj.com",
             "zhengy@fundbj.com",
             "chuh@fundbj.com"
+        ],
+        "disabled": "N"
+    },
+    {
+        "strategy": "fluctuation",
+        "name": "股价异动",
+        "freq": "60s",
+        "period": 10,
+        "range": 0.02,
+        "url": [
+            "http://hq.sinajs.cn/list="
         ],
         "disabled": "N"
     }
