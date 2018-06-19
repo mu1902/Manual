@@ -74,7 +74,8 @@ def newstock(strategy):
                 text3 = "买一额：" + str(round(buy1_e / 10000, 0)) + "万\n"
                 text4 = "现价：" + str(round(current, 2)) + \
                     "-涨停价：" + str(round(end_y * 1.1, 2))
-                tool.output(strategy['name'], text1 + text2 + text3 + text4)
+                # tool.output(strategy['name'], text1 + text2 + text3 + text4)
+                tool.show_toast(strategy['name'], text1 + text2 + text3 + text4)
                 # lock.release()
         delta = (d - d1).seconds / 60
         if delta < 10:
@@ -91,8 +92,12 @@ def fluctuation(strategy):
         for i in arr:
             max = float(i) if float(i) > max else max
             min = float(i) if float(i) < min else min
-        return max / min - 1
+        if min == 0:
+            return 0
+        else:
+            return max / min - 1
 
+    data = {}
     while not Global.exited_flag:
         d = datetime.datetime.now()
         d1 = datetime.datetime.now().replace(hour=9, minute=25, second=0, microsecond=0)
@@ -103,8 +108,8 @@ def fluctuation(strategy):
             tool.wait(strategy['freq'])
             continue
 
-        # if off_time:
-        #     break
+        if off_time:
+            break
 
         try:
             file_object = open(Global._dir + '\stock1.txt',
@@ -114,12 +119,11 @@ def fluctuation(strategy):
             file_object.close()
 
         url = strategy['url'][0]
-        data = {}
         for i in range(len(stocks)):
             stocks[i] = stocks[i].replace("\n", "")
-            data[stocks[i]] = []
+            data[stocks[i]] = data[stocks[i]] if stocks[i] in data else []
             if len(stocks[i]) == 5:
-                url += 'hk' + stocks[i] + ','
+                url += 'rt_hk' + stocks[i] + ','
             elif stocks[i][0] == '0' or stocks[i][0] == '3':
                 url += 'sz' + stocks[i] + ','
             elif stocks[i][0] == '6':
@@ -128,6 +132,7 @@ def fluctuation(strategy):
                 continue
 
         ret = tool.get_html(url).decode('gb2312').split(';')
+
         for i in range(len(stocks)):
             if len(stocks[i]) == 5:
                 data[stocks[i]].append(ret[i].split(',')[6])
@@ -135,16 +140,18 @@ def fluctuation(strategy):
                 data[stocks[i]].append(ret[i].split(',')[3])
             else:
                 continue
-            if len(data[stocks[i]]) > 10:
+            if len(data[stocks[i]]) > strategy['period']:                
                 data[stocks[i]].pop(0)
 
         message = ''
         for k, v in data.items():
             r = mm(v)
-            if r > strategy['range']
+            if r > strategy['range']:
                 message += k + ':' + str(r * 100) + '%\n'
 
-        tool.output(strategy['name'], message)
+        if message != '':
+            # tool.output(strategy['name'], message)
+            tool.show_toast(strategy['name'], message)
         tool.wait(strategy['freq'])
 
 

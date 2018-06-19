@@ -3,14 +3,18 @@ import smtplib
 import time
 import urllib
 from email.mime.text import MIMEText
+from threading import Thread
+from tkinter import *
 
 cookies = {}
 
+
 def get_html(url, request_data=None, method='post', header=None, cookie_name=None):
-    ''' 获取页面 '''
     if cookie_name:
-        cookie = cookies.setdefault(cookie_name, http.cookiejar.CookieJar())  # 声明一个CookieJar对象实例来保存cookie
-        handler = urllib.request.HTTPCookieProcessor(cookie)  # 利用urllib库的HTTPCookieProcessor对象来创建cookie处理器
+        # 声明一个CookieJar对象实例来保存cookie
+        cookie = cookies.setdefault(cookie_name, http.cookiejar.CookieJar())
+        # 利用urllib库的HTTPCookieProcessor对象来创建cookie处理器
+        handler = urllib.request.HTTPCookieProcessor(cookie)
         opener = urllib.request.build_opener(handler)  # 通过handler来构建opener
     try:
         if request_data:
@@ -71,6 +75,36 @@ def output(title, message):
     print(">>>>>" + title + "<<<<<")
     print(message)
     print("-----------------------------\n")
+
+
+def show_toast(title, message):
+    th = Thread(target=toast, args=(title, message,))
+    th.setDaemon(True)
+    th.start()
+    th.join()
+
+
+def toast(title, message):
+    root = Tk()
+    root.title(title)
+    # root.attributes("-alpha", 0.8)
+    root.wm_attributes('-topmost', 1)
+    screenwidth = root.winfo_screenwidth()
+    screenheight = root.winfo_screenheight()
+    root.geometry('200x100+' + str(screenwidth - 220) +
+                  '+' + str(screenheight - 200))
+    root.resizable(width=False, height=False)
+    l = Label(root, text=message).pack(side=TOP)
+
+    def auto_close():
+        time.sleep(3)
+        try:
+            root.destroy()
+        except e:
+            pass
+    th = Thread(target=auto_close)
+    th.start()
+    root.mainloop()
 
 
 def read_log(path):
