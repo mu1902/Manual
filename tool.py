@@ -92,7 +92,7 @@ def toast(title, message):
     screenwidth = root.winfo_screenwidth()
     screenheight = root.winfo_screenheight()
     root.geometry('200x100+' + str(screenwidth - 220) +
-                  '+' + str(screenheight - 200))
+                  '+' + str(screenheight - 180))
     root.resizable(width=False, height=False)
     l = Label(root, text=message).pack(side=TOP)
 

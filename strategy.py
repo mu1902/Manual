@@ -75,7 +75,8 @@ def newstock(strategy):
                 text4 = "现价：" + str(round(current, 2)) + \
                     "-涨停价：" + str(round(end_y * 1.1, 2))
                 # tool.output(strategy['name'], text1 + text2 + text3 + text4)
-                tool.show_toast(strategy['name'], text1 + text2 + text3 + text4)
+                tool.show_toast(strategy['name'],
+                                text1 + text2 + text3 + text4)
                 # lock.release()
         delta = (d - d1).seconds / 60
         if delta < 10:
@@ -140,14 +141,14 @@ def fluctuation(strategy):
                 data[stocks[i]].append(ret[i].split(',')[3])
             else:
                 continue
-            if len(data[stocks[i]]) > strategy['period']:                
+            if len(data[stocks[i]]) > strategy['period']:
                 data[stocks[i]].pop(0)
 
         message = ''
         for k, v in data.items():
             r = mm(v)
             if r > strategy['range']:
-                message += k + ':' + str(r * 100) + '%\n'
+                message += k + ' : ' + str(round(r * 100, 2)) + '%\n'
 
         if message != '':
             # tool.output(strategy['name'], message)
