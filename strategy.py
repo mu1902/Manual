@@ -56,6 +56,9 @@ def newstock(strategy):
                 continue
             res = tool.get_html(url).decode('gb2312').split(',')
 
+            if len(res) < 12:
+                continue
+
             end_y = float(res[2])
             current = float(res[3])
             turnover = float(res[9])
@@ -254,8 +257,8 @@ def HKEX(strategy):
         else:
             return False
 
-    def delta(n1, n2):
-        # 计算两数变动量
+    def delta1(n1, n2):
+        # 计算两数相对变动量
         num = re.compile(r'^[-+]?[0-9]+\.[0-9]+$')
         if num.match(n1[:-1]) and num.match(n2[:-1]):
             n1 = float(n1[:-1])
@@ -264,6 +267,16 @@ def HKEX(strategy):
                 return n1 / n2 - 1
             else:
                 return n1 - n2
+        else:
+            return 0
+
+    def delta2(n1, n2):
+        # 计算两数绝对变动量
+        num = re.compile(r'^[-+]?[0-9]+\.[0-9]+$')
+        if num.match(n1[:-1]) and num.match(n2[:-1]):
+            n1 = float(n1[:-1])
+            n2 = float(n2[:-1])
+            return n1 - n2
         else:
             return 0
 
@@ -278,10 +291,10 @@ def HKEX(strategy):
                n + 1 and sign(v)}
         return dic
 
-    def filter2(dic, d):
+    def filter2(dic, d1, d2):
         if dic:
-            lis = [(k, v[0], v[1], delta(v[0], v[1]))
-                   for k, v in dic.items() if len(v) == 2 and abs(delta(v[0], v[1])) > d]
+            lis = [(k, v[0], v[1], delta1(v[0], v[1]))
+                   for k, v in dic.items() if len(v) == 2 and abs(delta1(v[0], v[1])) > d1 and abs(delta2(v[0], v[1])) > d2]
             lis = sorted(lis, key=lambda item: item[3], reverse=True)
         else:
             lis = []
@@ -405,17 +418,17 @@ def HKEX(strategy):
     message += "-----------------------------\n"
     message += "3 港股通占比变动(大于10%)\n"
     message += date_title(dates2[0], 13)
-    message += formatter2(filter2(change[0], 0.1))
+    message += formatter2(filter2(change[0], 0.1, 0.05))
 
     message += "-----------------------------\n"
     message += "4 沪港通占比变动(大于50%)\n"
     message += date_title(dates2[1], 13)
-    message += formatter2(filter2(change[1], 0.5))
+    message += formatter2(filter2(change[1], 0.5, 0.05))
 
     message += "-----------------------------\n"
     message += "5 深港通占比变动(大于50%)\n"
     message += date_title(dates2[2], 13)
-    message += formatter2(filter2(change[2], 0.5))
+    message += formatter2(filter2(change[2], 0.5, 0.05))
 
     tool.output(strategy['name'], message)
     tool.send_email(strategy['receiver'], strategy['name'], message)
