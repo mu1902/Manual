@@ -15,6 +15,7 @@ from WindPy import w
 
 # lock = threading.Lock()
 
+
 def isHoliday(day):
     days = []
     try:
@@ -406,19 +407,19 @@ def HKEX(strategy):
                         "__VIEWSTATE": __VIEWSTATE,
                         "__VIEWSTATEGENERATOR": __VIEWSTATEGENERATOR,
                         "__EVENTVALIDATION": __EVENTVALIDATION,
-                        "ddlShareholdingDay": "0" * (2 - len(str(d.day))) + str(d.day),
-                        "ddlShareholdingMonth": "0" * (2 - len(str(d.month))) + str(d.month),
-                        "ddlShareholdingYear": str(d.year),
-                        "btnSearch.x": "43",
-                        "btnSearch.y": "8"}, method='post').decode('utf-8')
+                        "txtShareholdingDate": d.strftime('%Y/%m/%d'),
+                        "btnSearch": '搜寻'
+                    }, method='post').decode('utf-8')
 
-                data = pq(html)(".result-table tr")
+                data = pq(html)("#pnlResult table tr")
                 __VIEWSTATE = pq(html)("#__VIEWSTATE").val()
                 __VIEWSTATEGENERATOR = pq(html)("#__VIEWSTATEGENERATOR").val()
                 __EVENTVALIDATION = pq(html)("#__EVENTVALIDATION").val()
                 for tr in data:
-                    code = pq(tr)("td:eq(1)").text()
-                    percentage = pq(tr)("td:eq(3)").text()
+                    code = pq(tr).find(
+                        ".col-stock-name .mobile-list-body").text()
+                    percentage = pq(tr).find(
+                        ".col-shareholding-percent .mobile-list-body").text()
                     if code in strategy['stock'] and i == 0:
                         hold[code].append(percentage)
                     if code in change[i]:
@@ -456,4 +457,16 @@ def HKEX(strategy):
     message += formatter2(filter2(change[2], 0.5, 0.05))
 
     tool.output(strategy['name'], message)
-    # tool.send_email(strategy['receiver'], strategy['name'], message)
+    tool.send_email(strategy['receiver'], strategy['name'], message)
+
+
+if __name__ == '__main__':
+    try:
+        file_object = open(Global._dir + '\strategy.json',
+                           mode='r', encoding='UTF-8')
+        strategies = json.load(file_object)
+        file_object.close()
+    except:
+        print("无法读取配置文件")
+
+    HKEX(strategies[3])
