@@ -15,6 +15,23 @@ from WindPy import w
 
 # lock = threading.Lock()
 
+def isHoliday(day):
+    days = []
+    try:
+        file_object = open(Global._dir + '/restday.txt',
+                           mode='r', encoding='UTF-8')
+        days = file_object.readlines()
+        file_object.close()
+    except FileNotFoundError as e:
+        print(e)
+
+    day = datetime.datetime.strptime(str(day), '%Y-%m-%d')
+    days = [datetime.datetime.strptime(d[:-1], "%Y.%m.%d") for d in days]
+    if day.weekday() == 5 or day.weekday() == 6 or day in days:
+        return True
+    else:
+        return False
+
 
 @wrapt.decorator
 def log(wrapped, instance, args, kwargs):
@@ -27,6 +44,8 @@ def log(wrapped, instance, args, kwargs):
 
 @log
 def newstock(strategy):
+    if isHoliday(datetime.date.today()):
+        return None
     while not Global.exited_flag:
         d = datetime.datetime.now()
         d1 = datetime.datetime.now().replace(hour=9, minute=25, second=0, microsecond=0)
@@ -77,7 +96,7 @@ def newstock(strategy):
                 text3 = "买一额：" + str(round(buy1_e / 10000, 0)) + "万\n"
                 text4 = "现价：" + str(round(current, 2)) + \
                     "-涨停价：" + str(round(end_y * 1.1, 2))
-                # tool.output(strategy['name'], text1 + text2 + text3 + text4)
+                tool.output(strategy['name'], text1 + text2 + text3 + text4)
                 tool.show_toast(strategy['name'],
                                 text1 + text2 + text3 + text4)
                 # lock.release()
@@ -101,6 +120,8 @@ def fluctuation(strategy):
         else:
             return max / min - 1
 
+    if isHoliday(datetime.date.today()):
+        return None
     data = {}
     while not Global.exited_flag:
         d = datetime.datetime.now()
@@ -154,13 +175,15 @@ def fluctuation(strategy):
                 message += k + ' : ' + str(round(r * 100, 2)) + '%\n'
 
         if message != '':
-            # tool.output(strategy['name'], message)
+            tool.output(strategy['name'], message)
             tool.show_toast(strategy['name'], message)
         tool.wait(strategy['freq'])
 
 
 @log
 def convertible(strategy):
+    if isHoliday(datetime.date.today()):
+        return None
     # 上交所
     if strategy['disabled'] == 'Y':
         return None
@@ -234,6 +257,8 @@ def windIndex(strategy):
 
 @log
 def HKEX(strategy):
+    if isHoliday(datetime.date.today()):
+        return None
     if strategy['disabled'] == 'Y':
         return None
 
@@ -431,4 +456,4 @@ def HKEX(strategy):
     message += formatter2(filter2(change[2], 0.5, 0.05))
 
     tool.output(strategy['name'], message)
-    tool.send_email(strategy['receiver'], strategy['name'], message)
+    # tool.send_email(strategy['receiver'], strategy['name'], message)

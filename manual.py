@@ -22,24 +22,6 @@ def sigint_handler(signum, frame):
     sys.exit()
 
 
-def isHoliday(day):
-    days = []
-    try:
-        file_object = open(Global._dir + '/restday.txt',
-                           mode='r', encoding='UTF-8')
-        days = file_object.readlines()
-        file_object.close()
-    except FileNotFoundError as e:
-        print(e)
-
-    day = datetime.datetime.strptime(str(day), '%Y-%m-%d')
-    days = [datetime.datetime.strptime(d[:-1], "%Y.%m.%d") for d in days]
-    if day.weekday() == 5 or day.weekday() == 6 or day in days:
-        return True
-    else:
-        return False
-
-
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, sigint_handler)
 
@@ -58,12 +40,11 @@ if __name__ == '__main__':
     except:
         print("无法读取配置文件")
 
-    if not isHoliday(datetime.date.today()):
-        for s in strategies:
-            th = Thread(target=eval(s['strategy']), args=(s,))
-            th.setDaemon(True)
-            th.start()
-            ths.append(th)
+    for s in strategies:
+        th = Thread(target=eval(s['strategy']), args=(s,))
+        th.setDaemon(True)
+        th.start()
+        ths.append(th)
 
     while True:
         alive = False
