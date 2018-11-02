@@ -30,6 +30,7 @@ def get_html(url, request_data=None, method='post', header=None, cookie_name=Non
         if header:
             for key in header:
                 req.add_header(key, header[key])
+
         if cookie_name:
             con = opener.open(req).read()
         else:
