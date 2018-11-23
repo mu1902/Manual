@@ -185,9 +185,10 @@ def fluctuation(strategy):
 def convertible(strategy):
     if isHoliday(datetime.date.today()):
         return None
-    # 上交所
     if strategy['disabled'] == 'Y':
         return None
+
+    # 上交所
     sh_res1 = tool.get_html(strategy['url'][0],
                             {"beginDate": strategy['begin'],
                                 "endDate": datetime.date.today().strftime('%Y-%m-%d')},
