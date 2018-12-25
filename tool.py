@@ -82,7 +82,7 @@ def show_toast(title, message):
     th = Thread(target=toast, args=(title, message,))
     th.setDaemon(True)
     th.start()
-    th.join()
+    # th.join()
 
 
 def toast(title, message):
@@ -101,6 +101,7 @@ def toast(title, message):
         time.sleep(3)
         try:
             root.destroy()
+            print('destroy')
         except e:
             pass
     th = Thread(target=auto_close)

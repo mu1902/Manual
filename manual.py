@@ -47,11 +47,9 @@ if __name__ == '__main__':
         ths.append(th)
 
     while True:
-        alive = False
         for th in ths:
-            alive = alive or th.is_alive()
-            if alive:
+            if th.is_alive():
                 break
-        if not alive:
+        else:
             break
         sleep(1)
