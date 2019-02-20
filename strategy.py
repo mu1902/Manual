@@ -255,6 +255,8 @@ def windIndex(strategy):
                 tool.send_email(strategy['receiver'],
                                 strategy['name'], message)
         w.stop()
+    else:
+        print(d.day)
 
 
 @log
