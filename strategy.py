@@ -404,7 +404,7 @@ def HKEX(strategy):
             if d.weekday() != 5 and d.weekday() != 6:
                 if __VIEWSTATE == '':
                     html = tool.get_html(
-                        strategy['url'][i + 1], {}, method='get').decode('utf-8')
+                        strategy['url'][i + 1], {}, method='get')
                 else:
                     html = tool.get_html(strategy['url'][i + 1], {
                         "__VIEWSTATE": __VIEWSTATE,
@@ -412,25 +412,32 @@ def HKEX(strategy):
                         "__EVENTVALIDATION": __EVENTVALIDATION,
                         "txtShareholdingDate": d.strftime('%Y/%m/%d'),
                         "btnSearch": '搜寻'
-                    }, method='post').decode('utf-8')
+                    }, method='post')
 
-                data = pq(html)("#pnlResult table tr")
-                __VIEWSTATE = pq(html)("#__VIEWSTATE").val()
-                __VIEWSTATEGENERATOR = pq(html)("#__VIEWSTATEGENERATOR").val()
-                __EVENTVALIDATION = pq(html)("#__EVENTVALIDATION").val()
-                for tr in data:
-                    code = pq(tr).find(
-                        ".col-stock-name .mobile-list-body").text()
-                    percentage = pq(tr).find(
-                        ".col-shareholding-percent .mobile-list-body").text()
-                    if code in strategy['stock'] and i == 0:
-                        hold[code].append(percentage)
-                    if code in change[i]:
-                        change[i][code].append(percentage)
-                    else:
-                        change[i][code] = [percentage]
-                dates2[i].append(d.strftime('%Y-%m-%d'))
-                ndate = ndate - 1
+                if html:
+                    html = html.decode('utf-8')
+                    data = pq(html)("#pnlResult table tr")
+                    __VIEWSTATE = pq(html)("#__VIEWSTATE").val()
+                    __VIEWSTATEGENERATOR = pq(html)(
+                        "#__VIEWSTATEGENERATOR").val()
+                    __EVENTVALIDATION = pq(html)("#__EVENTVALIDATION").val()
+                    for tr in data:
+                        code = pq(tr).find(
+                            ".col-stock-name .mobile-list-body").text()
+                        percentage = pq(tr).find(
+                            ".col-shareholding-percent .mobile-list-body").text()
+                        if code in strategy['stock'] and i == 0:
+                            hold[code].append(percentage)
+                        if code in change[i]:
+                            change[i][code].append(percentage)
+                        else:
+                            change[i][code] = [percentage]
+                    dates2[i].append(d.strftime('%Y-%m-%d'))
+                    ndate = ndate - 1
+                else:
+                    tool.output(strategy['name'], str(
+                        i)+' '+d.strftime('%Y/%m/%d')+' error')
+                    return None
         __VIEWSTATE = ''
         ndate = strategy['nDate'][1]
         d = datetime.date.today()
@@ -472,4 +479,4 @@ if __name__ == '__main__':
     except:
         print("无法读取配置文件")
 
-    HKEX(strategies[3])
+    fluctuation(strategies[4])

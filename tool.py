@@ -1,11 +1,13 @@
 import http.cookiejar
 import smtplib
+import ssl
 import time
 import urllib
 from email.mime.text import MIMEText
 from threading import Thread
 from tkinter import *
 
+ssl._create_default_https_context = ssl._create_unverified_context
 cookies = {}
 
 
