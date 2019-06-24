@@ -160,6 +160,8 @@ def fluctuation(strategy):
         ret = tool.get_html(url).decode('gb2312').split(';')
 
         for i in range(len(stocks)):
+            if stocks[i][0] not in ['0','3','6']:
+                continue
             if len(stocks[i]) == 5:
                 data[stocks[i]].append(ret[i].split(',')[6])
             elif len(stocks[i]) == 6:
@@ -411,7 +413,11 @@ def HKEX(strategy):
                         "__VIEWSTATEGENERATOR": __VIEWSTATEGENERATOR,
                         "__EVENTVALIDATION": __EVENTVALIDATION,
                         "txtShareholdingDate": d.strftime('%Y/%m/%d'),
-                        "btnSearch": '搜寻'
+                        "btnSearch": '搜寻',
+                        "today": d.strftime('%Y%m%d'),
+                        "sortBy": 'stockcode',
+                        "sortDirection": 'asc',
+                        "alertMsg": ''
                     }, method='post')
 
                 if html:
