@@ -6,7 +6,8 @@
         "freq1": "15s",
         "url": [
             "http://hq.sinajs.cn/list="
-        ]
+        ],
+        "disabled": "N"
     },
     {
         "strategy": "convertible",
@@ -41,7 +42,8 @@
             "xuex@fundbj.com",
             "zhengy@fundbj.com",
             "chuh@fundbj.com"
-        ]
+        ],
+        "disabled": "Y"
     },
     {
         "strategy": "HKEX",
@@ -53,7 +55,6 @@
             "https://sc.hkexnews.hk/TuniS/www.hkexnews.hk/sdw/search/mutualmarket_c.aspx?t=sz"
         ],
         "stock": [
-            "山东新华制药股份",
             "华宝国际",
             "福寿园"
         ],
@@ -67,7 +68,7 @@
             "zhengy@fundbj.com",
             "chuh@fundbj.com"
         ],
-        "disabled": "N"
+        "disabled": "Y"
     },
     {
         "strategy": "fluctuation",
@@ -77,6 +78,7 @@
         "range": 0.02,
         "url": [
             "http://hq.sinajs.cn/list="
-        ]
+        ],
+        "disabled": "Y"
     }
 ]

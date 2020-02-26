@@ -123,6 +123,9 @@ def fluctuation(strategy):
 
     if isHoliday(datetime.date.today()):
         return None
+    if strategy['disabled'] == 'Y':
+        return None
+        
     data = {}
     while not Global.exited_flag:
         d = datetime.datetime.now()
@@ -148,26 +151,28 @@ def fluctuation(strategy):
         for i in range(len(stocks)):
             stocks[i] = stocks[i].replace("\n", "")
             data[stocks[i]] = data[stocks[i]] if stocks[i] in data else []
-            if len(stocks[i]) == 5:
-                url += 'rt_hk' + stocks[i] + ','
-            elif stocks[i][0] == '0' or stocks[i][0] == '3':
+            if len(stocks[i]) == 4:
+                url += 'rt_hk0' + stocks[i] + ','
+            elif stocks[i][0] in ['0', '3', '1']:
                 url += 'sz' + stocks[i] + ','
-            elif stocks[i][0] == '6':
+            elif stocks[i][0] in ['6', '5']:
                 url += 'sh' + stocks[i] + ','
             else:
+                stocks.pop(i)
                 continue
-
+        # print(url)
         ret = tool.get_html(url).decode('gb2312').split(';')
 
         for i in range(len(stocks)):
-            if stocks[i][0] not in ['0','3','6']:
-                continue
-            if len(stocks[i]) == 5:
-                data[stocks[i]].append(ret[i].split(',')[6])
-            elif len(stocks[i]) == 6:
-                data[stocks[i]].append(ret[i].split(',')[3])
-            else:
-                continue
+            try:
+                if len(stocks[i]) == 4:
+                    data[stocks[i]].append(ret[i].split(',')[6])
+                elif len(stocks[i]) == 6:
+                    data[stocks[i]].append(ret[i].split(',')[3])
+                else:
+                    continue
+            except:
+                print(i)
             if len(data[stocks[i]]) > strategy['period']:
                 data[stocks[i]].pop(0)
 
@@ -238,6 +243,9 @@ def convertible(strategy):
 
 @log
 def windIndex(strategy):
+    if strategy['disabled'] == 'Y':
+        return None
+
     d = datetime.date.today()
     d_begin = datetime.date.today() - datetime.timedelta(days=500)
     if d.day in strategy['period']:
